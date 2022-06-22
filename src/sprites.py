@@ -27,7 +27,7 @@ class Avatar(pygame.sprite.Sprite):
         elif isinstance(self.game.map, TiledMap):
             self.rect.x = self.pos.x
             self.rect.y = self.pos.y
-        self.drives = BodyDrives(self)
+        self.drives = BodyDrives(self.game.environment_temperature, self)
         self.inventory = deque()
 
     def update_position(self):
@@ -89,7 +89,7 @@ class Avatar(pygame.sprite.Sprite):
         self.inventory.remove(object)
 
     def eat(self):
-        if self.inventory:
+        if self.inventory and self.drives.stored_energy < self.drives.basal_energy:
             for object in self.inventory:
                 if object in CONSUMABLES:
                     self.add_food_intake(CONSUMABLES[object]['kcal'])
@@ -98,7 +98,7 @@ class Avatar(pygame.sprite.Sprite):
                     break
 
     def drink(self):
-        if self.inventory:
+        if self.inventory and self.drives.water < self.drives.basal_water:
             if 'cup' in self.inventory:
                 self.add_water_intake(NON_CONSUMABLES['cup']['capacity'])
                 self.drives.run_action("drink")
@@ -189,16 +189,16 @@ class Object(pygame.sprite.Sprite):
             target_dist = self.target.pos - self.pos
             if target_dist.length_squared() <= (radius**2)/6: # Done this way to boost performance
                 if self.type == 'fire':
-                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature + 8
+                    avatar.drives.perceived_temperature = self.game.environment_temperature + 8
             elif target_dist.length_squared() <= (radius**2)/3:
                 if self.type == 'fire':
-                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature + 4
+                    avatar.drives.perceived_temperature = self.game.environment_temperature + 4
             elif target_dist.length_squared() <= radius**2:
                 if self.type == 'fire':
-                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature + 2
+                    avatar.drives.perceived_temperature = self.game.environment_temperature + 2
             else:
                 if self.type == 'fire':
-                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature
+                    avatar.drives.perceived_temperature = self.game.environment_temperature
 
     def update_position(self):
         if isinstance(self.game.map, Map):

@@ -51,7 +51,7 @@ class Game:
 
         # Lighting effect
         self.fog = pygame.Surface((self.width, self.height))
-        self.fog.fill(NIGHT_COLOR)
+        self.fog.fill(NIGHT_VISION)
         self.light_mask = pygame.transform.scale(pygame.image.load(os.path.join(assets_folder, LIGHT_MASK)).convert_alpha(), (self.field_of_view * 2.35, self.field_of_view * 2.35))
         self.light_rect = self.light_mask.get_rect()
 
@@ -72,6 +72,9 @@ class Game:
         # Set time
         self.hours = 0
         self.days = 0
+
+        # Set day/night cycle conditions
+        self.environment_temperature = ENVIRONMENT_TEMPERATURE
 
         # Set map attributes
         self.on_water_source = False
@@ -169,6 +172,12 @@ class Game:
             hits = pygame.sprite.spritecollide(avatar, self.object_sprites, False)
             for hit in hits:
                 self.hit_interaction(hit, avatar)
+            
+            # Update day/night cycle conditions
+            if self.hours >= 22 or self.hours < 6:
+                self.environment_temperature = ENVIRONMENT_TEMPERATURE - 10
+            else:
+                self.environment_temperature = ENVIRONMENT_TEMPERATURE
 
         # Update objects
         for object in self.object_sprites:
@@ -288,10 +297,14 @@ class Game:
 
     def draw_fog(self):
         # Draw the light mask (gradient) onto the fog image
-        self.fog.fill(NIGHT_COLOR)
+        self.fog.fill(NIGHT_VISION)
         for avatar in self.avatar_sprites:
             self.light_rect.center = self.camera.apply(avatar).center
         self.fog.blit(self.light_mask, self.light_rect)
+        self.window.blit(self.fog, (0, 0), special_flags=pygame.BLEND_MULT)
+
+    def draw_night(self):
+        self.fog.fill(NIGHT_COLOR)
         self.window.blit(self.fog, (0, 0), special_flags=pygame.BLEND_MULT)
 
     def draw_grid(self):
@@ -329,6 +342,10 @@ class Game:
 
         # Draw line of vision
         self.raycasting()
+
+        # Draw day/night cycle
+        if self.hours >= 22 or self.hours < 6:
+            self.draw_night()
 
         # Draw fog
         if self.night_mode:

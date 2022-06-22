@@ -7,8 +7,8 @@ from settings import *
 class BodyDrives:
     # Reference: https://www.jstor.org/stable/26444791?seq=3
     
-    def __init__(self, avatar=None,
-                       environment_temperature=ENVIRONMENT_TEMPERATURE,
+    def __init__(self, environment_temperature,
+                       avatar=None,
                        body_temperature=BODY_TEMPERATURE,
                        stored_energy=STORED_ENERGY,
                        stored_water=STORED_WATER,
@@ -17,8 +17,8 @@ class BodyDrives:
                        basal_energy=BASAL_ENERGY,
                        basal_water=BASAL_WATER,
                        actions=ACTIONS):
+        self.perceived_temperature = environment_temperature # [ºC]
         self.avatar = avatar
-        self.environment_temperature = environment_temperature
         self.body_temperature = body_temperature
         self.stored_energy = stored_energy # [kcal]
         self.basal_energy = basal_energy # [kcal]
@@ -31,7 +31,6 @@ class BodyDrives:
         self.basal_water = basal_water # [l]
         self.sleepiness = 0 # arousal
         self.biological_clock = 0 # [hours]
-        self.perceived_temperature = environment_temperature
 
     @staticmethod
     def watts_to_kcalh(units):
@@ -174,7 +173,7 @@ class BodyDrives:
             self.avatar.update_game_time(self.actions[action]["required_time"])
         self.update_thirst_arousal(self.water)
         self.check_priorities()
-        print(f'\n[Action Executed] {action}\n[Arousal Values]\tHunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
+        print(f'\n[Action Executed] {action}\n[Energy consumption] {action_consume:.2f} kcal\n[Arousal Values]\tHunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
 
     def check_priorities(self):
         intensity = max(self.hunger, self.sleepiness, self.thirst)
@@ -241,5 +240,5 @@ class BodyDrives:
 
 if __name__ == "__main__":
 
-    body = BodyDrives()
+    body = BodyDrives(ENVIRONMENT_TEMPERATURE)
     body.print_general_information()
