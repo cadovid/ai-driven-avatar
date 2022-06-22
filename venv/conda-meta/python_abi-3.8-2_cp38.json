@@ -1,0 +1,36 @@
+{
+  "build": "2_cp38",
+  "build_number": 2,
+  "channel": "https://conda.anaconda.org/conda-forge/linux-64",
+  "constrains": [
+    "pypy <0a0"
+  ],
+  "depends": [
+    "python 3.8.*"
+  ],
+  "extracted_package_dir": "/home/david/anaconda3/pkgs/python_abi-3.8-2_cp38",
+  "features": "",
+  "files": [],
+  "fn": "python_abi-3.8-2_cp38.tar.bz2",
+  "license": "BSD-3-Clause",
+  "license_family": "BSD",
+  "link": {
+    "source": "/home/david/anaconda3/pkgs/python_abi-3.8-2_cp38",
+    "type": 1
+  },
+  "md5": "bfbb29d517281e78ac53e48d21e6e860",
+  "name": "python_abi",
+  "package_tarball_full_path": "/home/david/anaconda3/pkgs/python_abi-3.8-2_cp38.tar.bz2",
+  "paths_data": {
+    "paths": [],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "8535eaa9225ce212f8ed437c4a7341409903a4c005ecb6d36c63af2793b59689",
+  "size": 4018,
+  "subdir": "linux-64",
+  "timestamp": 1624472039876,
+  "track_features": "",
+  "url": "https://conda.anaconda.org/conda-forge/linux-64/python_abi-3.8-2_cp38.tar.bz2",
+  "version": "3.8"
+}
