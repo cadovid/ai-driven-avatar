@@ -66,7 +66,7 @@ CONSUMABLES = {'apple': {'kcal': 119},
 
 NON_CONSUMABLES = {'cup': {'capacity': 0.33},
                    'water-dispenser': {'perishable': False},
-                   'fire': {'perishable': False}
+                   'fire': {'activation_radius': 400, 'perishable': False}
                    }
 
 # Action settings

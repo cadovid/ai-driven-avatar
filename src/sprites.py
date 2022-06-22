@@ -183,6 +183,23 @@ class Object(pygame.sprite.Sprite):
         self.step = 0
         self.direction = 1
 
+    def distance_to_avatar(self, radius):
+        for avatar in self.game.avatar_sprites:
+            self.target = avatar
+            target_dist = self.target.pos - self.pos
+            if target_dist.length_squared() <= (radius**2)/6: # Done this way to boost performance
+                if self.type == 'fire':
+                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE + 8
+            elif target_dist.length_squared() <= (radius**2)/3:
+                if self.type == 'fire':
+                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE + 4
+            elif target_dist.length_squared() <= radius**2:
+                if self.type == 'fire':
+                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE + 2
+            else:
+                if self.type == 'fire':
+                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE
+
     def update_position(self):
         if isinstance(self.game.map, Map):
             self.rect.x = self.pos.x * self.game.tilesize
@@ -192,13 +209,19 @@ class Object(pygame.sprite.Sprite):
             self.rect.y = self.pos.y
 
     def update(self):
-        """ Generates the bobbing motion animation """
-        offset = BOB_RANGE * (self.tweening(self.step / BOB_RANGE) - 0.5)
-        self.rect.centery = self.pos.y + offset * self.direction
-        self.step += BOB_SPEED
-        if self.step > BOB_RANGE:
-            self.step = 0
-            self.direction *= -1
+        # Generates the bobbing motion animation
+        if ENABLE_ANIMATION:
+            if isinstance(self.game.map, TiledMap):
+                offset = BOB_RANGE * (self.tweening(self.step / BOB_RANGE) - 0.5)
+                self.rect.centery = self.pos.y + offset * self.direction
+                self.step += BOB_SPEED
+                if self.step > BOB_RANGE:
+                    self.step = 0
+                    self.direction *= -1
+        
+        # Update distances
+        if self.type in NON_CONSUMABLES and 'activation_radius' in NON_CONSUMABLES[self.type]:
+            self.distance_to_avatar(NON_CONSUMABLES[self.type]['activation_radius'])
 
     def get_rect_center(self):
         return self.rect.center

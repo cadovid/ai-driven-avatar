@@ -93,6 +93,10 @@ class Game:
                         Mob(self, col, row)
                     elif tile == 'o':
                         Object(self, col, row, choice(RANDOM_INIT))
+                    elif tile == 'w':
+                        Object(self, col, row, 'water-dispenser')
+                    elif tile == 'f':
+                        Object(self, col, row, 'fire')
                     elif tile == '=':
                         Wall(self, col, row)
         elif isinstance(self.map, TiledMap):
@@ -166,11 +170,9 @@ class Game:
             for hit in hits:
                 self.hit_interaction(hit, avatar)
 
-        # Update object animations
-        if ENABLE_ANIMATION:
-            if isinstance(self.map, TiledMap):
-                for object in self.object_sprites:
-                    object.update()
+        # Update objects
+        for object in self.object_sprites:
+            object.update()
 
     def hit_interaction(self, hit, avatar):
         if hit.type in CONSUMABLES:
