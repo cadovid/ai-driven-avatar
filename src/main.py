@@ -340,7 +340,7 @@ class Game:
             draw_drive_on_screen(self.window, 60, 10, avatar.drives.stored_energy, energy_bar, "Energy")
             draw_drive_on_screen(self.window, 60, 20, avatar.drives.water, BASAL_WATER, "Water")
             draw_drive_on_screen(self.window, 60, 30, 1 - avatar.drives.sleepiness, 1, "Sleepiness")
-            draw_text_on_screen(self.window, f"ENVIRONMENT TEMPERATURE: {avatar.drives.environment_temperature}", "monospace", 15, BLACK, self.width - (self.width / 2), 10, "center")
+            draw_text_on_screen(self.window, f"ENV TEMPERATURE: {avatar.drives.perceived_temperature}", "monospace", 15, BLACK, self.width - (self.width / 2), 10, "center")
             draw_text_on_screen(self.window, f"DAYS: {self.days} HOURS: {self.hours:.2f}", "monospace", 15, BLACK, self.width - (self.width / 2), 25, "center")
             draw_text_on_screen(self.window, f"INVENTORY: {list(avatar.inventory)}", "monospace", 15, BLACK, self.width - (self.width / 2), 40, "center")
         if self.paused:

@@ -189,16 +189,16 @@ class Object(pygame.sprite.Sprite):
             target_dist = self.target.pos - self.pos
             if target_dist.length_squared() <= (radius**2)/6: # Done this way to boost performance
                 if self.type == 'fire':
-                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE + 8
+                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature + 8
             elif target_dist.length_squared() <= (radius**2)/3:
                 if self.type == 'fire':
-                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE + 4
+                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature + 4
             elif target_dist.length_squared() <= radius**2:
                 if self.type == 'fire':
-                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE + 2
+                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature + 2
             else:
                 if self.type == 'fire':
-                    avatar.drives.environment_temperature = ENVIRONMENT_TEMPERATURE
+                    avatar.drives.perceived_temperature = avatar.drives.environment_temperature
 
     def update_position(self):
         if isinstance(self.game.map, Map):

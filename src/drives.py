@@ -31,6 +31,7 @@ class BodyDrives:
         self.basal_water = basal_water # [l]
         self.sleepiness = 0 # arousal
         self.biological_clock = 0 # [hours]
+        self.perceived_temperature = environment_temperature
 
     @staticmethod
     def watts_to_kcalh(units):
@@ -70,8 +71,8 @@ class BodyDrives:
         Efficiency of the machine: e = W /Q2 + W. Given that Q1 and Q2 are proportional to T1 and T2, (Q1/T1) and (Q2/T2).
         Then the efficiency of the human body, being T1 the higher temperature and T2 the lower one is 1 - T2/T1"""
         self.T1 = self.celsius_to_kelvin(self.body_temperature)
-        self.T2 = self.celsius_to_kelvin(self.environment_temperature)
-        if self.T1 == self.T2 or self.environment_temperature > self.body_temperature:
+        self.T2 = self.celsius_to_kelvin(self.perceived_temperature)
+        if self.T1 == self.T2 or self.perceived_temperature > self.body_temperature:
             self.T1 = self.T2 + 0.001
         self.efficiency = 1 - (self.T2 / self.T1)
 
@@ -86,9 +87,9 @@ class BodyDrives:
 
         Conductivity of the air: 5.7e-6
         """
-        self.T1 = max(self.celsius_to_kelvin(self.environment_temperature), self.celsius_to_kelvin(self.body_temperature))
-        self.T2 = min(self.celsius_to_kelvin(self.environment_temperature), self.celsius_to_kelvin(self.body_temperature))
-        if self.environment_temperature > self.body_temperature:
+        self.T1 = max(self.celsius_to_kelvin(self.perceived_temperature), self.celsius_to_kelvin(self.body_temperature))
+        self.T2 = min(self.celsius_to_kelvin(self.perceived_temperature), self.celsius_to_kelvin(self.body_temperature))
+        if self.perceived_temperature > self.body_temperature:
             self.T1 = self.T2
         self.conductivity_rate = ( 5.7e-6 * self.body_area * (self.T1 - self.T2) ) / self.material_thickness
 
@@ -206,7 +207,7 @@ class BodyDrives:
 
         print()
         print('******* Environment *******')
-        print(F'Temperature of the environment: {self.environment_temperature} ºC')
+        print(F'Temperature of the environment: {self.perceived_temperature} ºC')
         
         print()
         print('******* Body *******')
