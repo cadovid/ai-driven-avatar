@@ -178,7 +178,8 @@ class Game:
                 self.environment_temperature = ENVIRONMENT_TEMPERATURE - 10
             else:
                 self.environment_temperature = ENVIRONMENT_TEMPERATURE
-
+            avatar.drives.update_bmr(self.environment_temperature)
+        
         # Update objects
         for object in self.object_sprites:
             object.update()

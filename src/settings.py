@@ -48,6 +48,7 @@ BODY_AREA = 1.8 # [m²]
 MATERIAL_THICKNESS = 0.003 # [m]
 STORED_WATER = 3 # [l]
 BASAL_WATER = 4 # [l]
+BASAL_METABOLIC_RATE = 80 # [W]
 
 # Object settings
 
@@ -71,12 +72,13 @@ NON_CONSUMABLES = {'cup': {'capacity': 0.33},
                    }
 
 # Action settings
-ACTIONS = {"stand": {"required_energy": 125, "required_time": 1},
-           "movement": {"required_energy": 195, "required_time": 0.1},
-           "eat": {"required_energy": 68.8 + int(), "required_time": 1},
-           "drink": {"required_energy": 68.8, "required_time": 0.01},
-           "pickup": {"required_energy": 68.8, "required_time": 0.01},
-           "sleep": {"required_energy": 68.8, "required_time": 8}
+# For required_energy, all the values do not include the BMR. Given in [W/s]
+ACTIONS = {"stand": {"required_energy": 45, "required_time": 1},
+           "movement": {"required_energy": 115, "required_time": 0.1},
+           "eat": {"required_energy": 0, "required_time": 1},
+           "drink": {"required_energy": 0, "required_time": 0.01},
+           "pickup": {"required_energy": 0, "required_time": 0.01},
+           "sleep": {"required_energy": 0, "required_time": 8}
            }
 
 # User events

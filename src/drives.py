@@ -16,6 +16,7 @@ class BodyDrives:
                        material_thickness=MATERIAL_THICKNESS,
                        basal_energy=BASAL_ENERGY,
                        basal_water=BASAL_WATER,
+                       basal_metabolic_rate=BASAL_METABOLIC_RATE,
                        actions=ACTIONS):
         self.perceived_temperature = environment_temperature # [ºC]
         self.avatar = avatar
@@ -29,6 +30,7 @@ class BodyDrives:
         self.thirst = 0 # arousal
         self.water = stored_water # [l]
         self.basal_water = basal_water # [l]
+        self.basal_metabolic_rate = basal_metabolic_rate + (0.01 * (25 - environment_temperature) * basal_metabolic_rate) # [W]
         self.sleepiness = 0 # arousal
         self.biological_clock = 0 # [hours]
 
@@ -155,12 +157,16 @@ class BodyDrives:
             self.water = self.basal_water
         else:
             self.water += quantity
+    
+    def update_bmr(self, environment_temperature):
+        self.basal_metabolic_rate = BASAL_METABOLIC_RATE + (0.01 * (25 - environment_temperature) * BASAL_METABOLIC_RATE)
 
     def run_action(self, action, food_kcal=None):
+        print(self.basal_metabolic_rate)
         self.get_efficiency()
         if action == "eat":
-            self.actions[action]["required_energy"] = 68.8 + (0.1 * food_kcal)
-        action_consume = self.watts_to_kcalh(self.actions[action]["required_energy"]) * self.actions[action]["required_time"]
+            self.actions[action]["required_energy"] = self.watts_to_kcalh(self.basal_metabolic_rate) + (0.1 * food_kcal)
+        action_consume = (self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"])) * self.actions[action]["required_time"]
         action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consume)
         self.get_heatgivenoff_rate()
         action_water = self.get_water_mass_consumed(action_heatgivenoff, self.actions[action]["required_time"])
@@ -173,7 +179,9 @@ class BodyDrives:
             self.avatar.update_game_time(self.actions[action]["required_time"])
         self.update_thirst_arousal(self.water)
         self.check_priorities()
-        print(f'\n[Action Executed] {action}\n[Energy consumption] {action_consume:.2f} kcal\n[Arousal Values]\tHunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
+        print(f'\n[Action Executed] {action}'
+                f'\n[Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
+                f'\n[Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
 
     def check_priorities(self):
         intensity = max(self.hunger, self.sleepiness, self.thirst)
@@ -187,8 +195,8 @@ class BodyDrives:
 
     def print_action_information(self):
         for action in self.actions:
-            print(f'\n[{action}] required_energy in watts: {self.actions[action]["required_energy"]}, required_time in hours: {self.actions[action]["required_time"]}')
-            action_consume = self.watts_to_kcalh(self.actions[action]["required_energy"]) * self.actions[action]["required_time"]
+            print(f'\n[{action}] required_energy: {self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"]):.2f} kcal/h, required_time: {self.actions[action]["required_time"]} h')
+            action_consume = (self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"])) * self.actions[action]["required_time"]
             print(f'[{action}] total consume {action_consume:.2f} kcal in {self.actions[action]["required_time"]} h')
             action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consume)
             action_water = self.get_water_mass_consumed(action_heatgivenoff, self.actions[action]["required_time"])
