@@ -34,7 +34,7 @@ TITLE = "TIMIK v0.1"
 FPS = 60
 MAP_FILE = 'map.txt'
 USE_TILED_MAP = True
-TILEDMAP_FILE = 'map1.tmx'
+TILEDMAP_FILE = 'custom_map_one.tmx'
 FIELD_OF_VIEW = TILESIZE * 10
 
 # Environment settings
