@@ -1,8 +1,9 @@
 import math
-from random import choice
 import pygame
 import os
 import sys
+
+from random import choice
 
 from hud import draw_text_on_screen, draw_drive_on_screen
 from settings import *
@@ -10,7 +11,8 @@ from sprites import Avatar, Mob, Object, Wall, Obstacle
 from tilemap import Map, Camera, TiledMap
 
 
-class Game:
+class Game():
+
     def __init__(self):
         self.width = WIDTH
         self.height = HEIGHT
@@ -22,7 +24,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.fps = FPS
         self.field_of_view = FIELD_OF_VIEW
-        self.timer = pygame.time.get_ticks()
+        # self.timer = pygame.time.get_ticks()
 
     def load_data(self):
         # Paths
@@ -389,7 +391,14 @@ class Game:
                 if event.type == pygame.KEYUP:
                     self.waiting = False
 
-
+    def _get_obs(self):
+        for avatar in self.avatar_sprites:
+            return {"avatar_position": avatar.pos,
+                    "environment_temperature": avatar.drives.perceived_temperature,
+                    "energy_stored": avatar.drives.stored_energy,
+                    "water_stored": avatar.drives.water,
+                    "sleepiness": 1 - avatar.drives.sleepiness
+                    }
 
 
 # ---------- Main algorithm -----------
