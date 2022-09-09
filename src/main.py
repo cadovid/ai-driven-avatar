@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import pygame
 import os
 import sys
@@ -393,11 +394,11 @@ class Game():
 
     def _get_obs(self):
         for avatar in self.avatar_sprites:
-            return {"avatar_position": avatar.pos,
-                    "environment_temperature": avatar.drives.perceived_temperature,
-                    "energy_stored": avatar.drives.stored_energy,
-                    "water_stored": avatar.drives.water,
-                    "sleepiness": 1 - avatar.drives.sleepiness
+            return {"avatar_position": np.array([avatar.pos.x, avatar.pos.y], dtype=np.int32),
+                    "environment_temperature": np.array([avatar.drives.perceived_temperature], dtype=np.int32),
+                    "energy_stored": np.array([avatar.drives.stored_energy], dtype=np.float32),
+                    "water_stored": np.array([avatar.drives.water], dtype=np.float32),
+                    "sleepiness": np.array([avatar.drives.sleepiness], dtype=np.float32)
                     }
 
 
