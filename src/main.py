@@ -98,7 +98,12 @@ class Game():
                     elif tile == 's':
                         Mob(self, col, row)
                     elif tile == 'o':
-                        Object(self, col, row, choice(RANDOM_INIT))
+                        random_object = choice(RANDOM_INIT)
+                        if random_object in UNIQUE_ITEMS:
+                            for object in self.object_sprites:
+                                while random_object == object.type and object.type in UNIQUE_ITEMS:
+                                    random_object = choice(RANDOM_INIT)
+                        Object(self, col, row, random_object)
                     elif tile == 'w':
                         Object(self, col, row, 'water-dispenser')
                     elif tile == 'f':
@@ -112,7 +117,12 @@ class Game():
                 elif tile_object.name == 'mob':
                     Mob(self, tile_object.x, tile_object.y)
                 elif tile_object.name == 'object':
-                    Object(self, tile_object.x, tile_object.y, choice(RANDOM_INIT))
+                    random_object = choice(RANDOM_INIT)
+                    if random_object in UNIQUE_ITEMS:
+                        for object in self.object_sprites:
+                            while random_object == object.type and object.type in UNIQUE_ITEMS:
+                                random_object = choice(RANDOM_INIT)
+                    Object(self, tile_object.x, tile_object.y, random_object)
                 elif tile_object.name == 'dispenser':
                     Object(self, tile_object.x, tile_object.y, 'water-dispenser')
                 elif tile_object.name == 'fire':

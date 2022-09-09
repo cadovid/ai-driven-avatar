@@ -60,6 +60,7 @@ BOB_SPEED = 0.5
     # Full list of assets
 OBJECT_IMAGES = {'apple': 'apple.png', 'hamburguer': 'hamburguer.png', 'cup': 'cup.png', 'water-dispenser': 'water-dispenser.png', 'fire': 'fire.png'}
 RANDOM_INIT = ['apple', 'hamburguer', 'cup']
+UNIQUE_ITEMS = ['cup']
 
     # Object attributes
 CONSUMABLES = {'apple': {'kcal': 119},

@@ -235,7 +235,7 @@ def launch_test():
         
         # Render the game (slow the process in order not to see a crazy fast video)
         env.render()
-        time.sleep(0.05)
+        time.sleep(0.1)
         
         # Check end of the episode conditions
         if done == True:
@@ -245,6 +245,7 @@ def launch_test():
         print('<'*50)
 
     env.close()
+
 
 if __name__ == "__main__":
 
