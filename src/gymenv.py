@@ -1,3 +1,4 @@
+import argparse
 import numpy as np
 import pygame
 import time
@@ -154,8 +155,8 @@ class GymGame(Env):
 
 
 
-# ---------- Main algorithm -----------
-# -------------------------------------
+# ---------- Main algorithm ----------
+# ------------------------------------
 
 def launch_random_actions_run():
     env = GymGame()
@@ -185,7 +186,7 @@ def launch_random_actions_run():
         
         # Render the game (slow the process in order not to see a crazy fast video)
         env.render()
-        time.sleep(0.25)
+        time.sleep(0.2)
         
         # Check end of the episode conditions
         if done == True:
@@ -234,7 +235,7 @@ def launch_test():
         
         # Render the game (slow the process in order not to see a crazy fast video)
         env.render()
-        time.sleep(0.2)
+        time.sleep(0.05)
         
         # Check end of the episode conditions
         if done == True:
@@ -247,6 +248,23 @@ def launch_test():
 
 if __name__ == "__main__":
 
-    launch_test()
-    #launch_manual()
-    #launch_random_actions_run()
+    # Instantiate the parser
+    parser = argparse.ArgumentParser(prog='AI OpenGym Driven Avatar Environment',
+                                     description='Runs RL Driven Avatar as an Opengym environment.')
+    
+    # Optional positional arguments
+    parser.add_argument('-m', '--manual', action='store_true', help='Runs on manual operation')
+    parser.add_argument('-r', '--random', action='store_true', help='Runs on random actions operation')
+    parser.add_argument('-t', '--test', action='store_true', help='Runs test operations')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1')
+    
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Operations
+    if args.manual:
+        launch_manual()
+    elif args.random:
+        launch_random_actions_run()
+    elif args.test:
+        launch_test()
