@@ -201,7 +201,7 @@ class Game():
         if hit.type in CONSUMABLES:
             self.hitted_object = hit
         elif hit.type in NON_CONSUMABLES:
-            if (hit.type == 'cup') and (hit.type not in avatar.inventory):
+            if (hit.type == 'cup'):
                 self.hitted_object = hit
             elif (hit.type == 'water-dispenser'):
                 self.on_water_source = True
