@@ -162,7 +162,6 @@ class BodyDrives:
         self.basal_metabolic_rate = BASAL_METABOLIC_RATE + (0.01 * (25 - environment_temperature) * BASAL_METABOLIC_RATE)
 
     def run_action(self, action, food_kcal=None):
-        print(self.basal_metabolic_rate)
         self.get_efficiency()
         if action == "eat":
             self.actions[action]["required_energy"] = self.watts_to_kcalh(self.basal_metabolic_rate) + (0.1 * food_kcal)
@@ -179,9 +178,9 @@ class BodyDrives:
             self.avatar.update_game_time(self.actions[action]["required_time"])
         self.update_thirst_arousal(self.water)
         self.check_priorities()
-        print(f'\n[Action Executed] {action}'
-                f'\n[Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
-                f'\n[Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
+        print(f'[GAME][Action Executed] {action}'
+                f'\n[GAME][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
+                f'\n[GAME][Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
 
     def check_priorities(self):
         intensity = max(self.hunger, self.sleepiness, self.thirst)
@@ -191,7 +190,7 @@ class BodyDrives:
             drive = "sleep"
         elif intensity == self.thirst:
             drive = "thirst"
-        print(f'[Priority] {drive}')
+        print(f'\n[GAME][Priority] {drive}')
 
     def print_action_information(self):
         for action in self.actions:
