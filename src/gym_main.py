@@ -1,13 +1,12 @@
 import argparse
 import numpy as np
 import pygame
-import time
 
-from collections import deque
 from enum import Enum, unique
 from gym import Env, spaces
 
-from main import Game
+from py_main import Game
+from rl_algorithms import RLAlgorithm
 from settings import CONSUMABLES, ENVIRONMENT_TEMPERATURE
 
 
@@ -43,8 +42,11 @@ class GymGame(Env):
     def reset(self):
         self.state = self.game.new()
         
-        # Reset the reward
+        # Reset the cumulative reward (return)
         self.episodic_return = 0
+
+        # Reset the episodic number of steps
+        self.episodic_step = 0
 
         return self.game._get_obs()
 
@@ -54,9 +56,9 @@ class GymGame(Env):
 
         # Assert that it is a valid action 
         assert self.action_space.contains(action), "Invalid Action"
-
-        # Reward for executing a step
-        reward = 1
+        
+        # Compute for reward
+        total_hours_pre = self.game.hours + (self.game.days * 24)
 
         # Executes action behaviour 
         for avatar in self.game.avatar_sprites:
@@ -106,8 +108,15 @@ class GymGame(Env):
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+        # Reward for executing the step
+        total_hours_post = self.game.hours + (self.game.days * 24)
+        reward = total_hours_post - total_hours_pre
+
         # Increment the episodic return
-        self.episodic_return += 1
+        self.episodic_return += reward
+
+        # Increment the episodic step
+        self.episodic_step += 1
 
         # Return state
         self.state = self.game._get_obs()
@@ -154,98 +163,6 @@ class GymGame(Env):
             return False
 
 
-
-# ---------- Main algorithm ----------
-# ------------------------------------
-
-def launch_random_actions_run():
-    env = GymGame()
-    state = env.reset()
-    print()
-    print(f"[GYM][Initial state] {state}")
-
-    while True:
-        print()
-        print('>'*50)
-        print(f'[GYM][Episodic return] {env.episodic_return}')
-
-        # Get valid actions space
-        env.get_valid_actions()
-        print(f"[GYM][Valid actions] {[env.get_action_meanings(action) for action in env._valid_actions]}")
-
-        # Take a random action
-        action = env.action_space.sample()
-        while action not in env._valid_actions:
-            action = env.action_space.sample()
-        print(f"[GYM][Execute action] {env.get_action_meanings(action)}")
-
-        # Run action
-        state, reward, done, info = env.step(action)
-        print(f'[GYM][State] {state}')
-        print(f"[GYM][Total elapsed time] {env.game.days} days, {env.game.hours:.2f} hours")
-        
-        # Render the game (slow the process in order not to see a crazy fast video)
-        env.render()
-        time.sleep(0.2)
-        
-        # Check end of the episode conditions
-        if done == True:
-            print('<'*50)
-            break
-
-        print('<'*50)
-
-    env.close()
-
-def launch_manual():
-    gymgame = GymGame()
-
-    while True:
-        obs = gymgame.reset()
-        gymgame.game.run()
-        gymgame.game.end_screen()
-
-def launch_test():
-    env = GymGame()
-    state = env.reset()
-    actions = deque([0, 2, 2, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 6, 0, 0, 0, 6, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 6, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1,
-                     1, 6, 3, 0, 0, 0, 5, 5, 5, 1, 1, 1, 1, 1, 1, 4, 2, 2, 2, 2, 2, 2, 7])
-    print()
-    print(f"[GYM][Initial state] {state}")
-
-    while actions:
-        print()
-        print('>'*50)
-        print(f'[GYM][Episodic return] {env.episodic_return}')
-
-        # Get valid actions space
-        env.get_valid_actions()
-        print(f"[GYM][Valid actions] {[env.get_action_meanings(action) for action in env._valid_actions]}")
-
-        # Take test action
-        action = actions.popleft()
-        print(f"[GYM][Execute action] {env.get_action_meanings(action)}")
-
-        # Run action
-        state, reward, done, info = env.step(action)
-        print(f'[GYM][State] {state}')
-        print(f"[GYM][Total elapsed time] {env.game.days} days, {env.game.hours:.2f} hours")
-        
-        # Render the game (slow the process in order not to see a crazy fast video)
-        env.render()
-        time.sleep(0.1)
-        
-        # Check end of the episode conditions
-        if done == True:
-            print('<'*50)
-            break
-
-        print('<'*50)
-
-    env.close()
-
-
 if __name__ == "__main__":
 
     # Instantiate the parser
@@ -263,8 +180,14 @@ if __name__ == "__main__":
 
     # Operations
     if args.manual:
-        launch_manual()
+        env = GymGame()
+        while True:
+            obs = env.reset()
+            env.game.run()
+            env.game.end_screen()
     elif args.random:
-        launch_random_actions_run()
+        env = GymGame()
+        RLAlgorithm(env).random_policy()
     elif args.test:
-        launch_test()
+        env = GymGame()
+        RLAlgorithm(env).test_policy()

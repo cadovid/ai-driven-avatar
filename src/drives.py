@@ -178,9 +178,9 @@ class BodyDrives:
             self.avatar.update_game_time(self.actions[action]["required_time"])
         self.update_thirst_arousal(self.water)
         self.check_priorities()
-        print(f'[GAME][Action Executed] {action}'
-                f'\n[GAME][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
-                f'\n[GAME][Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
+        print(f'[Game Information][Action Executed] {action}'
+                f'\n[Game Information][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
+                f'\n[Game Information][Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
 
     def check_priorities(self):
         intensity = max(self.hunger, self.sleepiness, self.thirst)
@@ -190,7 +190,7 @@ class BodyDrives:
             drive = "sleep"
         elif intensity == self.thirst:
             drive = "thirst"
-        print(f'\n[GAME][Priority] {drive}')
+        print(f'\n[Game Information][Priority] {drive}')
 
     def print_action_information(self):
         for action in self.actions:
