@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import pygame
+import sys
 
 from enum import Enum, unique
 from gym import Env, spaces
@@ -32,12 +33,13 @@ class GymGame(Env):
         self.observation_space = spaces.Dict(
             {
                 "avatar_position": spaces.Box(low=np.array([0, 0]), high=np.array([1984, 1472]), dtype=np.int32),
-                "environment_temperature": spaces.Box(low=0, high=50, shape=(1,), dtype=np.int32),
+                "environment_temperature": spaces.Box(low=20, high=40, shape=(1,), dtype=np.int32),
                 "energy_stored": spaces.Box(low=0, high=130000, shape=(1,), dtype=np.float32),
                 "water_stored": spaces.Box(low=0, high=4, shape=(1,), dtype=np.float32),
                 "sleepiness": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
             }
         )
+        #TODO add if objects_are_on_range, have_objects_on_inventory, on_water, hitted_object, wall positions?
 
     def reset(self):
         self.state = self.game.new()
@@ -162,6 +164,60 @@ class GymGame(Env):
         else:
             return False
 
+    def manual_play(self):
+        self.state = self.reset()
+        self.pressed_keys = []
+        self.relevant_keys = {pygame.K_RIGHT: 0,
+                              pygame.K_LEFT: 1,
+                              pygame.K_DOWN: 2,
+                              pygame.K_UP: 3,
+                              pygame.K_e: 4,
+                              pygame.K_d: 5,
+                              pygame.K_p: 6,
+                              pygame.K_s: 7}
+        while True:
+            print()
+            print('>'*50)
+            print(f'[Manual policy][Episodic Step] {self.episodic_step}')
+            print(f"[Manual policy][State S_t-1] {self.state}")
+
+            # Get valid actions space
+            self.get_valid_actions()
+            print(f"[Manual policy][Action space A_t] {[self.get_action_meanings(action) for action in self._valid_actions]}")
+
+            # Perform action
+            action = self._process_event()
+            while action not in self._valid_actions:
+                action = self._process_event()
+            print(f"[Manual policy][Action A_t] {self.get_action_meanings(action)}")
+            state, reward, done, info = self.step(action)
+            print(f"[Manual policy][State S_t] {state}")
+            print(f"[Manual policy][Episodic return G_t so far] {self.episodic_return:.2f}")
+
+            # Render the game
+            self.render()
+
+            # Check end conditions
+            if done == True:
+                print()
+                print(f"[Manual policy][Total elapsed time] {self.game.days} days, {self.game.hours:.2f} hours")
+                print(f"[Manual policy][Episodic return G_t] {self.episodic_return:.2f}")
+                print('<'*50)
+                break
+        
+        self.close()
+    
+    def _process_event(self):
+        pygame.event.clear()
+        while True:
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                if event.key in self.relevant_keys:
+                    return self.relevant_keys[event.key]
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+
 
 if __name__ == "__main__":
 
@@ -180,11 +236,7 @@ if __name__ == "__main__":
 
     # Operations
     if args.manual:
-        env = GymGame()
-        while True:
-            obs = env.reset()
-            env.game.run()
-            env.game.end_screen()
+        GymGame().manual_play()
     elif args.random:
         env = GymGame()
         RLAlgorithm(env).random_policy()
