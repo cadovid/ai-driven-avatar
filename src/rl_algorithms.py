@@ -29,6 +29,7 @@ class RLAlgorithm():
             # Run action
             state, reward, done, info = self.env.step(action)
             print(f"[Random policy][State S_t] {state}")
+            print(f"[Random policy][Episodic return G_t so far] {self.env.episodic_return:.2f}")
             
             # Render the game (slow the process in order not to see a crazy fast video)
             self.env.render()
@@ -38,7 +39,7 @@ class RLAlgorithm():
             if done == True:
                 print()
                 print(f"[Random policy][Total elapsed time] {self.env.game.days} days, {self.env.game.hours:.2f} hours")
-                print(f"[Random policy][Episodic return] {self.env.episodic_return}")
+                print(f"[Random policy][Episodic return G_t] {self.env.episodic_return:.2f}")
                 print('<'*50)
                 break
 
@@ -68,6 +69,7 @@ class RLAlgorithm():
             # Run action
             state, reward, done, info = self.env.step(action)
             print(f"[Test policy][State S_t] {state}")
+            print(f"[Test policy][Episodic return G_t so far] {self.env.episodic_return:.2f}")
             
             # Render the game (slow the process in order not to see a crazy fast video)
             self.env.render()
@@ -77,7 +79,7 @@ class RLAlgorithm():
             if done == True:
                 print()
                 print(f"[Test policy][Total elapsed time] {self.env.game.days} days, {self.env.game.hours:.2f} hours")
-                print(f"[Test policy][Episodic return] {self.env.episodic_return}")
+                print(f"[Test policy][Episodic return G_t] {self.env.episodic_return:.2f}")
                 print('<'*50)
                 break
 
