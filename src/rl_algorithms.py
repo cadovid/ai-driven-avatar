@@ -29,6 +29,7 @@ class RLAlgorithm():
             # Run action
             state, reward, done, info = self.env.step(action)
             print(f"[Random policy][State S_t] {state}")
+            print(f"[Random policy][Step reward R_t] {reward:.2f}")
             print(f"[Random policy][Episodic return G_t so far] {self.env.episodic_return:.2f}")
             
             # Render the game (slow the process in order not to see a crazy fast video)
@@ -69,6 +70,7 @@ class RLAlgorithm():
             # Run action
             state, reward, done, info = self.env.step(action)
             print(f"[Test policy][State S_t] {state}")
+            print(f"[Test policy][Step reward R_t] {reward:.2f}")
             print(f"[Test policy][Episodic return G_t so far] {self.env.episodic_return:.2f}")
             
             # Render the game (slow the process in order not to see a crazy fast video)

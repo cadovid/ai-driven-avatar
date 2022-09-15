@@ -113,7 +113,6 @@ class Avatar(pygame.sprite.Sprite):
         self.drives.run_action("sleep")
         self.drives.biological_clock = 0
         self.drives.sleepiness = 0
-        self.update_game_time(8)
 
     def get_rect_center(self):
         return self.rect.center

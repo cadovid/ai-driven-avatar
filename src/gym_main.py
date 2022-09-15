@@ -109,10 +109,14 @@ class GymGame(Env):
             object.update()
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-        # Reward for executing the step
-        total_hours_post = self.game.hours + (self.game.days * 24)
-        reward = total_hours_post - total_hours_pre
+        
+        # Reward assignment
+        for avatar in self.game.avatar_sprites:
+            # 1) Reward for executing the step
+            total_hours_post = self.game.hours + (self.game.days * 24)
+            reward = total_hours_post - total_hours_pre
+            # 2) Reward in terms of arousal values
+            #reward = time_elapsed * (-1 * self.game.avatar.drives.hunger) + 
 
         # Increment the episodic return
         self.episodic_return += reward
@@ -192,6 +196,7 @@ class GymGame(Env):
             print(f"[Manual policy][Action A_t] {self.get_action_meanings(action)}")
             state, reward, done, info = self.step(action)
             print(f"[Manual policy][State S_t] {state}")
+            print(f"[Manual policy][Step reward R_t] {reward:.2f}")
             print(f"[Manual policy][Episodic return G_t so far] {self.episodic_return:.2f}")
 
             # Render the game
