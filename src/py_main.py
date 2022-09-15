@@ -408,15 +408,19 @@ class Game():
     def _get_obs(self):
         for avatar in self.avatar_sprites:
             return {#"avatar_position": np.array([avatar.pos.x, avatar.pos.y], dtype=np.int32),
-                    "environment_temperature": np.array([avatar.drives.perceived_temperature], dtype=np.int32),
-                    "energy_stored": np.array([avatar.drives.stored_energy], dtype=np.float32),
-                    "water_stored": np.array([avatar.drives.water], dtype=np.float32),
+                    "environment_temperature": np.array([self._normalize_value(avatar.drives.perceived_temperature, 20, 40)], dtype=np.float32),
+                    "energy_stored": np.array([self._normalize_value(avatar.drives.stored_energy, 0, 4000)], dtype=np.float32),
+                    "water_stored": np.array([self._normalize_value(avatar.drives.water, 0, 4)], dtype=np.float32),
                     "sleepiness": np.array([avatar.drives.sleepiness], dtype=np.float32),
                     "objects_at_sight": np.array([any(self.objects_on_sight)], dtype=np.int32),
                     "objects_on_inventory": np.array([int(bool(avatar.inventory))], dtype=np.int32),
                     "on_water_source": np.array([int(self.on_water_source)], dtype=np.int32),
                     "on_object": np.array([int(bool(self.hitted_object))], dtype=np.int32)
                     }
+    
+    def _normalize_value(self, value, min_range, max_range):
+        # Min-max normalization
+        return (value - min_range)/(max_range - min_range)
 
 
 # ---------- Main algorithm -----------
