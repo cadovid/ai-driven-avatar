@@ -82,6 +82,7 @@ class Game():
         # Set map attributes
         self.on_water_source = False
         self.hitted_object = None
+        self.objects_on_sight = []
 
         # Spawn contents of the map
         self.all_sprites = pygame.sprite.Group()
@@ -241,6 +242,7 @@ class Game():
             self.draw_window()
 
     def raycasting(self):
+        self.objects_on_sight = []
         # Check to see if the avatar can see any objects or mobs
 
         def iterate_over(sprites):
@@ -261,6 +263,7 @@ class Game():
                         pygame.draw.line(self.window, GREEN, avatar_center, sprite_center)
                     else:
                         pygame.draw.line(self.window, RED, avatar_center, sprite_center)
+                    self.objects_on_sight.append(found)
 
         for avatar in self.avatar_sprites:
             avatar_center = self.camera.apply(avatar).center
@@ -404,11 +407,15 @@ class Game():
 
     def _get_obs(self):
         for avatar in self.avatar_sprites:
-            return {"avatar_position": np.array([avatar.pos.x, avatar.pos.y], dtype=np.int32),
+            return {#"avatar_position": np.array([avatar.pos.x, avatar.pos.y], dtype=np.int32),
                     "environment_temperature": np.array([avatar.drives.perceived_temperature], dtype=np.int32),
                     "energy_stored": np.array([avatar.drives.stored_energy], dtype=np.float32),
                     "water_stored": np.array([avatar.drives.water], dtype=np.float32),
-                    "sleepiness": np.array([avatar.drives.sleepiness], dtype=np.float32)
+                    "sleepiness": np.array([avatar.drives.sleepiness], dtype=np.float32),
+                    "objects_at_sight": np.array([any(self.objects_on_sight)], dtype=np.int32),
+                    "objects_on_inventory": np.array([int(bool(avatar.inventory))], dtype=np.int32),
+                    "on_water_source": np.array([int(self.on_water_source)], dtype=np.int32),
+                    "on_object": np.array([int(bool(self.hitted_object))], dtype=np.int32)
                     }
 
 

@@ -32,14 +32,18 @@ class GymGame(Env):
         self.action_space = spaces.Discrete(8)
         self.observation_space = spaces.Dict(
             {
-                "avatar_position": spaces.Box(low=np.array([0, 0]), high=np.array([1984, 1472]), dtype=np.int32),
+                #"avatar_position": spaces.Box(low=np.array([0, 0]), high=np.array([1984, 1472]), dtype=np.int32),
                 "environment_temperature": spaces.Box(low=20, high=40, shape=(1,), dtype=np.int32),
-                "energy_stored": spaces.Box(low=0, high=130000, shape=(1,), dtype=np.float32),
+                "energy_stored": spaces.Box(low=0, high=4000, shape=(1,), dtype=np.float32),
                 "water_stored": spaces.Box(low=0, high=4, shape=(1,), dtype=np.float32),
-                "sleepiness": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
+                "sleepiness": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
+                "objects_at_sight": spaces.Box(low=0, high=1, shape=(1,), dtype=np.int32),
+                "objects_on_inventory": spaces.Box(low=0, high=1, shape=(1,), dtype=np.int32),
+                "on_water_source": spaces.Box(low=0, high=1, shape=(1,), dtype=np.int32),
+                "on_object": spaces.Box(low=0, high=1, shape=(1,), dtype=np.int32)
             }
         )
-        #TODO add if objects_are_on_range, have_objects_on_inventory, on_water, hitted_object, wall positions?
+        #TODO wall positions?
 
     def reset(self):
         self.state = self.game.new()
@@ -48,7 +52,7 @@ class GymGame(Env):
         self.episodic_return = 0
 
         # Reset the episodic number of steps
-        self.episodic_step = 0
+        self.episodic_step = 1
 
         return self.game._get_obs()
 
@@ -114,9 +118,11 @@ class GymGame(Env):
         for avatar in self.game.avatar_sprites:
             # 1) Reward for executing the step
             total_hours_post = self.game.hours + (self.game.days * 24)
-            reward = total_hours_post - total_hours_pre
-            # 2) Reward in terms of arousal values
-            #reward = time_elapsed * (-1 * self.game.avatar.drives.hunger) + 
+            time_elapsed = total_hours_post - total_hours_pre
+            # 2) Reward in terms of arousal values (negative impact)
+            drives_values = (time_elapsed * avatar.drives.hunger) + (time_elapsed * avatar.drives.thirst) + (time_elapsed * avatar.drives.sleepiness)
+            # 3) Sum up
+            reward = time_elapsed - drives_values
 
         # Increment the episodic return
         self.episodic_return += reward
@@ -124,6 +130,9 @@ class GymGame(Env):
         # Increment the episodic step
         self.episodic_step += 1
 
+        # Update observation objects at sight
+        self.game.raycasting()
+        
         # Return state
         self.state = self.game._get_obs()
 
@@ -184,6 +193,9 @@ class GymGame(Env):
             print('>'*50)
             print(f'[Manual policy][Episodic Step] {self.episodic_step}')
             print(f"[Manual policy][State S_t-1] {self.state}")
+            
+            # Render the game
+            self.render()
 
             # Get valid actions space
             self.get_valid_actions()
