@@ -7,14 +7,14 @@ class RLAlgorithm():
 
     def __init__(self, environment):
         self.env = environment
-        self.state = self.env.reset()
+        self.env.reset()
     
     def random_policy(self):
         while True:
             print()
             print('>'*50)
             print(f'[Random policy][Episodic Step] {self.env.episodic_step}')
-            print(f"[Random policy][State S_t-1] {self.state}")
+            print(f"[Random policy][State S_t-1] {self.env.state}")
 
             # Get valid actions space
             self.env.get_valid_actions()
@@ -57,7 +57,7 @@ class RLAlgorithm():
             print()
             print('>'*50)
             print(f'[Test policy][Episodic Step] {self.env.episodic_step}')
-            print(f"[Test policy][State S_t-1] {self.state}")
+            print(f"[Test policy][State S_t-1] {self.env.state}")
 
             # Get valid actions space
             self.env.get_valid_actions()
