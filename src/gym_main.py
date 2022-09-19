@@ -167,6 +167,7 @@ class GymGame(Env):
             for o in avatar.inventory:
                 if o in CONSUMABLES:
                     return True
+            return False
         elif action == Action.DRINK and self.game.on_water_source and avatar.inventory and avatar.drives.water < avatar.drives.basal_water:
             if "cup" in avatar.inventory:
                 return True
@@ -176,6 +177,11 @@ class GymGame(Env):
             return True
         else:
             return False
+
+    def valid_action_mask(self):
+        "It returns the invalid action mask. True if the action is valid, False otherwise"
+        for avatar in self.game.avatar_sprites:
+            return [self._is_valid_action(avatar, action) for action in Action]
 
     def manual_play(self):
         self.state = self.reset()
@@ -244,6 +250,8 @@ if __name__ == "__main__":
     
     # Optional positional arguments
     parser.add_argument('-m', '--manual', action='store_true', help='Runs on manual operation')
+    parser.add_argument('-pt', '--ppotrain', action='store_true', help='Runs PPO algorithm')
+    parser.add_argument('-pe', '--ppoeval', action='store_true', help='Runs PPO algorithm')
     parser.add_argument('-r', '--random', action='store_true', help='Runs on random actions operation')
     parser.add_argument('-t', '--test', action='store_true', help='Runs test operations')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1')
@@ -260,3 +268,9 @@ if __name__ == "__main__":
     elif args.test:
         env = GymGame()
         RLAlgorithm(env).test_policy()
+    elif args.ppotrain:
+        env = GymGame()
+        RLAlgorithm(env).PPO_policy_train()
+    elif args.ppoeval:
+        env = GymGame()
+        RLAlgorithm(env).PPO_policy_eval()
