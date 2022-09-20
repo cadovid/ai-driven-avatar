@@ -250,10 +250,11 @@ if __name__ == "__main__":
     
     # Optional positional arguments
     parser.add_argument('-m', '--manual', action='store_true', help='Runs on manual operation')
-    parser.add_argument('-pt', '--ppotrain', action='store_true', help='Runs PPO algorithm')
-    parser.add_argument('-pe', '--ppoeval', action='store_true', help='Runs PPO algorithm')
     parser.add_argument('-r', '--random', action='store_true', help='Runs on random actions operation')
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0')
+    parser.add_argument('-a', '--algorithm', nargs='?', default='ppo', help='Runs an operation with a RL algorithm')
+    parser.add_argument('-t', '--train', action='store_true', help='Performs training on a RL algorithm')
+    parser.add_argument('-e', '--evaluation', action='store_true', help='Performs evaluation on a RL algorithm')
     
     # Parse arguments
     args = parser.parse_args()
@@ -264,9 +265,11 @@ if __name__ == "__main__":
     elif args.random:
         env = GymGame()
         RLAlgorithm(env).random_policy()
-    elif args.ppotrain:
-        env = GymGame()
-        RLAlgorithm(env).PPO_policy_train()
-    elif args.ppoeval:
-        env = GymGame()
-        RLAlgorithm(env).PPO_policy_eval()
+    elif args.algorithm and args.train:
+        if 'ppo' in args.algorithm:
+            env = GymGame()
+            RLAlgorithm(env).PPO_policy_train()
+    elif args.algorithm and args.evaluation:
+        if 'ppo' in args.algorithm:
+            env = GymGame()
+            RLAlgorithm(env).PPO_policy_eval()

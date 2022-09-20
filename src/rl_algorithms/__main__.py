@@ -102,7 +102,7 @@ class RLAlgorithm():
             print(f"[PPO policy][Step reward R_t] {reward:.2f}")
             print(f"[PPO policy][Episodic return G_t so far] {self.env.episodic_return:.2f}")
             self.env.render()
-            time.sleep(0.2)
+            time.sleep(0.1)
             if done == True:
                 print(f"[PPO policy][Total elapsed time] {self.env.game.days} days, {self.env.game.hours:.2f} hours")
                 print(f"[PPO policy][Episodic return G_t] {self.env.episodic_return:.2f}")
