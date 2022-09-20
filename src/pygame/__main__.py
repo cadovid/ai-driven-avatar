@@ -90,6 +90,7 @@ class Game():
         self.wall_sprites = pygame.sprite.Group()
 
         if isinstance(self.map, Map):
+            # This option is deprecated. Need update
             for row, line in enumerate(self.map.data):
                 for col, tile in enumerate(line):
                     if tile == 'a':
@@ -110,6 +111,11 @@ class Game():
                     elif tile == '=':
                         Wall(self, col, row)
         elif isinstance(self.map, TiledMap):
+            current_objects = set()
+            n_objects = 0
+            for tile_object in self.map.tmxdata.objects:
+                if tile_object.name == 'object':
+                    n_objects += 1
             for tile_object in self.map.tmxdata.objects:
                 if tile_object.name == 'avatar':
                     Avatar(self, tile_object.x, tile_object.y)
@@ -117,15 +123,19 @@ class Game():
                     Mob(self, tile_object.x, tile_object.y)
                 elif tile_object.name == 'object':
                     random_object = choice(RANDOM_INIT)
-                    if random_object in UNIQUE_ITEMS:
-                        for object in self.object_sprites:
-                            while random_object == object.type and object.type in UNIQUE_ITEMS:
-                                random_object = choice(RANDOM_INIT)
+                    for object in self.object_sprites:
+                        current_objects.add(object.type)
+                    # Avoid unique items duplication on the map
+                    if random_object in UNIQUE_ITEMS and random_object in current_objects:
+                        while random_object in UNIQUE_ITEMS and random_object in current_objects:
+                            random_object = choice(RANDOM_INIT)
+                    # Check at least one object per item in unique items
+                    if (len(self.object_sprites) >= n_objects - len(UNIQUE_ITEMS)):
+                        for item in UNIQUE_ITEMS:
+                            if item not in current_objects:
+                                random_object = item
+                                break
                     Object(self, tile_object.x, tile_object.y, random_object)
-                elif tile_object.name == 'dispenser':
-                    Object(self, tile_object.x, tile_object.y, 'water-dispenser')
-                elif tile_object.name == 'fire':
-                    Object(self, tile_object.x, tile_object.y, 'fire')
                 elif tile_object.name == 'wall':
                     Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
 

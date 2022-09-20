@@ -71,8 +71,8 @@ BOB_SPEED = 0.5
 
 # 4.2. Full list of assets
 OBJECT_IMAGES = {'apple': 'apple.png', 'hamburguer': 'hamburguer.png', 'cup': 'cup.png', 'water-dispenser': 'water-dispenser.png', 'fire': 'fire.png'}
-RANDOM_INIT = ['apple', 'hamburguer', 'cup']
-UNIQUE_ITEMS = ['cup']
+RANDOM_INIT = ['apple', 'hamburguer', 'cup', 'water-dispenser', 'fire']
+UNIQUE_ITEMS = ['cup', 'water-dispenser', 'fire']
 
 # 4.3. Object attributes
 CONSUMABLES = {'apple': {'kcal': 119},
@@ -88,9 +88,9 @@ NON_CONSUMABLES = {'cup': {'capacity': 0.33},
 
 # 5.1. Action definitions
 # For required_energy, all the values do not include the BMR. Given in [W/s]
-ACTIONS = {"stand": {"required_energy": 45, "required_time": 1},
+ACTIONS = {"stand": {"required_energy": 45, "required_time": 0.1},
            "movement": {"required_energy": 115, "required_time": 0.1},
-           "eat": {"required_energy": 0, "required_time": 1},
+           "eat": {"required_energy": 0, "required_time": 0.5},
            "drink": {"required_energy": 0, "required_time": 0.01},
            "pickup": {"required_energy": 0, "required_time": 0.01},
            "sleep": {"required_energy": 0, "required_time": 8}
