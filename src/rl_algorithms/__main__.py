@@ -66,7 +66,7 @@ class RLAlgorithm():
         root_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         save_path = os.path.join(root_path, 'nn_models')
         pathlib.Path(save_path).mkdir(exist_ok=True) 
-        checkpoint_callback = CheckpointCallback(save_freq=10000, save_path=save_path, name_prefix=timestamp+"_PPO_MlpPolicy")
+        checkpoint_callback = CheckpointCallback(save_freq=5000, save_path=save_path, name_prefix=timestamp+"_PPO_MlpPolicy")
 
         # Wrap environment to allow action masking
         # # Ref: https://github.com/Stable-Baselines-Team/stable-baselines3-contrib/pull/25
@@ -77,7 +77,7 @@ class RLAlgorithm():
 
         # Train model
         model = MaskablePPO(MaskableMultiInputActorCriticPolicy, self.env, verbose=1, seed=42)
-        model.learn(total_timesteps=100000, callback=checkpoint_callback)
+        model.learn(total_timesteps=20000, callback=checkpoint_callback)
 
     def PPO_policy_eval(self):
         # Load last model
