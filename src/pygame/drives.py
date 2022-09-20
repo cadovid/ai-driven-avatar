@@ -169,6 +169,8 @@ class BodyDrives:
         action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consume)
         self.get_heatgivenoff_rate()
         action_water = self.get_water_mass_consumed(action_heatgivenoff, self.actions[action]["required_time"])
+        if action == "sleep":
+            action_water += 0.7
         self.update_water(-action_water)
         self.update_energy(-(action_heatgivenoff + action_usefulwork))
         self.biological_clock += self.actions[action]["required_time"]
@@ -177,12 +179,12 @@ class BodyDrives:
         if self.avatar is not None:
             self.avatar.update_game_time(self.actions[action]["required_time"])
         self.update_thirst_arousal(self.water)
-        """ print(f'\n[Game Information][Action Executed] {action}'
+        print(f'\n[Game Information][Action Executed] {action}'
               f'\n[Game Information][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
               f'\n[Game Information][Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
               f'\n[Game Information][Priority] {self.check_priorities()}'
               f'\n'
-              ) """
+              )
 
     def check_priorities(self):
         intensity = max(self.hunger, self.sleepiness, self.thirst)
