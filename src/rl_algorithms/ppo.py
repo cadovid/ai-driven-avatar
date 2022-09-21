@@ -35,6 +35,7 @@ class Defaults():
     EVAL_EPISODES = 10
     SEED = 42
     VERBOSITY = 1
+    LOGS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs/tensorboard_ppo')
     SAVE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'nn_models')
     NAME_PREFIX = "_PPO_ActorCriticPolicy"
     POLICY = CustomPolicy
@@ -66,14 +67,20 @@ class PPOAlgorithm():
 
         self.env = ActionMasker(self.env, mask_fn)
 
-        # Train the model
+        # Build the model
         model = MaskablePPO(policy=Defaults.POLICY,
                             env=self.env,
+                            tensorboard_log=Defaults.LOGS_PATH,
                             verbose=Defaults.VERBOSITY,
                             seed=Defaults.SEED,
                             device=Defaults.DEVICE
                             )
-        model.learn(total_timesteps=Defaults.TOTAL_TIMESTEPS, callback=checkpoint_callback)
+
+        # Train the model
+        model.learn(total_timesteps=Defaults.TOTAL_TIMESTEPS,
+                    callback=checkpoint_callback,
+                    tb_log_name=Defaults.NAME_PREFIX
+                    )
 
     def evaluation(self):
         # Load the most recent model
