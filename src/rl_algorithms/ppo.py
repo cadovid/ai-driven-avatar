@@ -2,6 +2,7 @@ import datetime
 import numpy as np
 import os
 import pathlib
+import tensorflow as tf
 import time
 
 from gym import Env
@@ -9,6 +10,10 @@ from sb3_contrib.common.maskable.policies import MaskableMultiInputActorCriticPo
 from sb3_contrib.common.wrappers import ActionMasker
 from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import CheckpointCallback
+
+
+def gpu_detected():
+    return bool(tf.config.list_physical_devices(device_type='GPU'))
 
 
 class Defaults():
@@ -22,6 +27,7 @@ class Defaults():
     SAVE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'nn_models')
     NAME_PREFIX = "_PPO_ActorCriticPolicy"
     POLICY = MaskableMultiInputActorCriticPolicy
+    DEVICE = "cuda" if gpu_detected() else "cpu"
 
 
 class PPOAlgorithm():
@@ -29,7 +35,7 @@ class PPOAlgorithm():
     def __init__(self, environment):
         self.env = environment
         self.state = self.env.reset()
-    
+
     def train(self):
         # Save timestamp
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
@@ -52,7 +58,8 @@ class PPOAlgorithm():
         model = MaskablePPO(policy=Defaults.POLICY,
                             env=self.env,
                             verbose=Defaults.VERBOSITY,
-                            seed=Defaults.SEED
+                            seed=Defaults.SEED,
+                            device=Defaults.DEVICE
                             )
         model.learn(total_timesteps=Defaults.TOTAL_TIMESTEPS, callback=checkpoint_callback)
 
@@ -60,7 +67,7 @@ class PPOAlgorithm():
         # Load the most recent model
         models = [{'file': x, 'steps': int(x.split('_steps')[0].split('_')[-1])} for x in os.listdir(Defaults.SAVE_PATH)]
         latest_model = sorted(models, key=lambda x: -x['steps'])[0]['file']
-        model = MaskablePPO.load(os.path.join(Defaults.SAVE_PATH, latest_model))
+        model = MaskablePPO.load(os.path.join(Defaults.SAVE_PATH, latest_model), device=Defaults.DEVICE)
 
         # Evaluate the model
         obs = self.env.reset()
