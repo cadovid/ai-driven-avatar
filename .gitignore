@@ -360,3 +360,6 @@ venv.bak/
 
 # Custom directories
 nn_models/
+
+# Logs
+logs/
