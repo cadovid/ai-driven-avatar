@@ -12,8 +12,19 @@ from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 
+def n_cpus():
+    return os.cpu_count()
+
+
 def gpu_detected():
     return bool(tf.config.list_physical_devices(device_type='GPU'))
+
+
+class CustomPolicy(MaskableMultiInputActorCriticPolicy):
+    def __init__(self, *args, **kwargs):
+        super(CustomPolicy, self).__init__(*args, **kwargs,
+                                           net_arch=[dict(pi=[128, 128, 128], vf=[128, 128, 128])]
+                                           )
 
 
 class Defaults():
@@ -26,8 +37,9 @@ class Defaults():
     VERBOSITY = 1
     SAVE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'nn_models')
     NAME_PREFIX = "_PPO_ActorCriticPolicy"
-    POLICY = MaskableMultiInputActorCriticPolicy
+    POLICY = CustomPolicy
     DEVICE = "cuda" if gpu_detected() else "cpu"
+    NUM_THREADS = n_cpus()
 
 
 class PPOAlgorithm():
