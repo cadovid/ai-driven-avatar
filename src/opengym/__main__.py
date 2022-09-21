@@ -7,7 +7,8 @@ from enum import Enum, unique
 from gym import Env, spaces
 
 from src.pygame.__main__ import Game
-from src.rl_algorithms.__main__ import RLAlgorithm
+from src.rl_algorithms.ppo import PPOAlgorithm
+from src.rl_algorithms.random import RandomAlgorithm
 from src.pygame.settings import CONSUMABLES, ENVIRONMENT_TEMPERATURE
 
 
@@ -183,7 +184,7 @@ class GymGame(Env):
         for avatar in self.game.avatar_sprites:
             return [self._is_valid_action(avatar, action) for action in Action]
 
-    def manual_play(self):
+    def manual_run(self):
         self.state = self.reset()
         self.pressed_keys = []
         self.relevant_keys = {pygame.K_RIGHT: 0,
@@ -261,15 +262,15 @@ if __name__ == "__main__":
 
     # Operations
     if args.manual:
-        GymGame().manual_play()
+        GymGame().manual_run()
     elif args.random:
         env = GymGame()
-        RLAlgorithm(env).random_policy()
+        RandomAlgorithm(env).run()
     elif args.algorithm and args.train:
         if 'ppo' in args.algorithm:
             env = GymGame()
-            RLAlgorithm(env).PPO_policy_train()
+            PPOAlgorithm(env).train()
     elif args.algorithm and args.evaluation:
         if 'ppo' in args.algorithm:
             env = GymGame()
-            RLAlgorithm(env).PPO_policy_eval()
+            PPOAlgorithm(env).evaluation()
