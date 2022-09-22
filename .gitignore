@@ -363,3 +363,4 @@ nn_models/
 
 # Logs
 logs/
+wandb/

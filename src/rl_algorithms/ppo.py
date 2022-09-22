@@ -4,12 +4,15 @@ import os
 import pathlib
 import tensorflow as tf
 import time
+import wandb
 
 from gym import Env
 from sb3_contrib.common.maskable.policies import MaskableMultiInputActorCriticPolicy
+from stable_baselines3.common.monitor import Monitor
 from sb3_contrib.common.wrappers import ActionMasker
 from sb3_contrib.ppo_mask import MaskablePPO
 from stable_baselines3.common.callbacks import CheckpointCallback
+from wandb.integration.sb3 import WandbCallback
 
 
 def n_cpus():
@@ -31,11 +34,12 @@ class Defaults():
 
     TOTAL_TIMESTEPS = 10000
     SAVE_FREQ = 10000
+    SAVE_GRAD_FREQ = 100
     EVAL_FREQ = 10000
     EVAL_EPISODES = 10
     SEED = 42
-    VERBOSITY = 1
-    LOGS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs/tensorboard_ppo')
+    VERBOSITY = 2
+    LOGS_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'logs/ppo')
     SAVE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'nn_models')
     NAME_PREFIX = "_PPO_ActorCriticPolicy"
     POLICY = CustomPolicy
@@ -49,16 +53,42 @@ class PPOAlgorithm():
         self.env = environment
         self.state = self.env.reset()
 
-    def train(self):
+    def train(self, use_wandb=True):
         # Save timestamp
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
-        # Save a checkpoint every N steps
-        pathlib.Path(Defaults.SAVE_PATH).mkdir(exist_ok=True) 
-        checkpoint_callback = CheckpointCallback(save_freq=Defaults.SAVE_FREQ,
-                                                 save_path=Defaults.SAVE_PATH,
-                                                 name_prefix=timestamp+Defaults.NAME_PREFIX
-                                                 )
+        # Monitor and log assignment        
+        self.env = Monitor(self.env)
+        pathlib.Path(Defaults.LOGS_PATH).mkdir(exist_ok=True)
+        pathlib.Path(Defaults.SAVE_PATH).mkdir(exist_ok=True)
+
+        if use_wandb:
+            # W&B log metrics interface
+            wandb_run = wandb.init(project="ai-driven-avatar",
+                                   entity="academic-david",
+                                   name=timestamp + Defaults.NAME_PREFIX,
+                                   sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
+                                   monitor_gym=True,  # auto-upload the videos of agents playing the game
+                                   save_code=False,  # optional
+                                   anonymous="allow",
+                                   )
+
+            # W&B log callback
+            callback = WandbCallback(verbose=Defaults.VERBOSITY,
+                                     model_save_path=Defaults.SAVE_PATH + "/" + f"{wandb_run.name}",
+                                     model_save_freq=Defaults.SAVE_FREQ,
+                                     gradient_save_freq=Defaults.SAVE_GRAD_FREQ
+                                     )
+        else:
+            # Checkpoint callback every N steps
+            #TODO Replace with EvalCallback
+            callback = CheckpointCallback(save_freq=Defaults.SAVE_FREQ,
+                                          save_path=Defaults.SAVE_PATH,
+                                          name_prefix=timestamp + Defaults.NAME_PREFIX
+                                         )
+
+        # Callbacks
+        callbacks = [callback]
 
         # Wrap environment to allow action masking
         # # Ref: https://github.com/Stable-Baselines-Team/stable-baselines3-contrib/pull/25
@@ -78,15 +108,24 @@ class PPOAlgorithm():
 
         # Train the model
         model.learn(total_timesteps=Defaults.TOTAL_TIMESTEPS,
-                    callback=checkpoint_callback,
+                    callback=callbacks,
                     tb_log_name=Defaults.NAME_PREFIX
                     )
+        
+        if use_wandb:
+            # End logging session
+            wandb.finish()
 
-    def evaluation(self):
+    def evaluation(self, use_wandb=True):
         # Load the most recent model
-        models = [{'file': x, 'steps': int(x.split('_steps')[0].split('_')[-1])} for x in os.listdir(Defaults.SAVE_PATH)]
-        latest_model = sorted(models, key=lambda x: -x['steps'])[0]['file']
-        model = MaskablePPO.load(os.path.join(Defaults.SAVE_PATH, latest_model), device=Defaults.DEVICE)
+        if use_wandb:
+            models = [{'file': x, 'timestamp': str(x.split(Defaults.NAME_PREFIX)[0].split(Defaults.NAME_PREFIX)[0])} for x in os.listdir(Defaults.SAVE_PATH)]
+            latest_model = sorted(models, reverse=True, key=lambda x: datetime.datetime.strptime(x["timestamp"], "%Y-%m-%d_%H:%M:%S"))[0]['file']
+            model = MaskablePPO.load(os.path.join(Defaults.SAVE_PATH, latest_model + "/model.zip"), device=Defaults.DEVICE)
+        else:
+            models = [{'file': x, 'steps': int(x.split('_steps')[0].split('_')[-1])} for x in os.listdir(Defaults.SAVE_PATH)]
+            latest_model = sorted(models, key=lambda x: -x['steps'])[0]['file']
+            model = MaskablePPO.load(os.path.join(Defaults.SAVE_PATH, latest_model), device=Defaults.DEVICE)
 
         # Evaluate the model
         obs = self.env.reset()
