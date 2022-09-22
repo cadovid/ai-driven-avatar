@@ -262,8 +262,9 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('-a', '--algorithm', nargs='?', default='ppo', help='Runs an operation with a RL algorithm')
     parser.add_argument('-t', '--train', action='store_true', help='Performs training on a RL algorithm')
+    parser.add_argument('--vecenv', action='store_true', help='Performs training on a RL algorithm with vectorized environments')
     parser.add_argument('-e', '--evaluation', action='store_true', help='Performs evaluation on a RL algorithm')
-    
+
     # Parse arguments
     args = parser.parse_args()
 
@@ -275,8 +276,11 @@ if __name__ == "__main__":
         RandomAlgorithm(env).run()
     elif args.algorithm and args.train:
         if 'ppo' in args.algorithm:
-            env = GymGame()
-            PPOAlgorithm(env).train()
+            if args.vecenv:
+                PPOAlgorithm(GymGame, use_vecenv=True).train()
+            else:
+                env = GymGame()
+                PPOAlgorithm(env).train()
     elif args.algorithm and args.evaluation:
         if 'ppo' in args.algorithm:
             env = GymGame()

@@ -7,6 +7,7 @@ import time
 import wandb
 
 from gym import Env
+from stable_baselines3.common.env_util import make_vec_env
 from sb3_contrib.common.maskable.policies import MaskableMultiInputActorCriticPolicy
 from stable_baselines3.common.monitor import Monitor
 from sb3_contrib.common.wrappers import ActionMasker
@@ -49,24 +50,33 @@ class Defaults():
 
 class PPOAlgorithm():
 
-    def __init__(self, environment):
+    def __init__(self, environment, use_vecenv=False, use_wandb=True):
         self.env = environment
-        self.state = self.env.reset()
+        self.use_vecenv = use_vecenv
+        self.use_wandb = use_wandb
+        if not self.use_vecenv:
+            self.state = self.env.reset()
 
-    def train(self, use_wandb=True):
+    def train(self):
+        # Save tags
+        if self.use_vecenv:
+            tag = "_Vectorized"
+        else:
+            tag = "_Vanilla"
+
         # Save timestamp
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
 
         # Monitor and log assignment        
-        self.env = Monitor(self.env)
+        #self.env = Monitor(self.env)
         pathlib.Path(Defaults.LOGS_PATH).mkdir(exist_ok=True)
         pathlib.Path(Defaults.SAVE_PATH).mkdir(exist_ok=True)
 
-        if use_wandb:
+        if self.use_wandb:
             # W&B log metrics interface
             wandb_run = wandb.init(project="ai-driven-avatar",
                                    entity="academic-david",
-                                   name=timestamp + Defaults.NAME_PREFIX,
+                                   name=timestamp + Defaults.NAME_PREFIX + tag,
                                    sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
                                    monitor_gym=True,  # auto-upload the videos of agents playing the game
                                    save_code=False,  # optional
@@ -84,7 +94,7 @@ class PPOAlgorithm():
             #TODO Replace with EvalCallback
             callback = CheckpointCallback(save_freq=Defaults.SAVE_FREQ,
                                           save_path=Defaults.SAVE_PATH,
-                                          name_prefix=timestamp + Defaults.NAME_PREFIX
+                                          name_prefix=timestamp + Defaults.NAME_PREFIX + tag
                                          )
 
         # Callbacks
@@ -95,7 +105,18 @@ class PPOAlgorithm():
         def mask_fn(env: Env) -> np.ndarray:
             return env.valid_action_mask()
 
-        self.env = ActionMasker(self.env, mask_fn)
+        def get_wrapper(env: Env) -> Env:
+            return ActionMasker(env, mask_fn)
+
+        # Vectorize environment
+        if self.use_vecenv:
+            self.env = make_vec_env(self.env,
+                                    n_envs=Defaults.NUM_THREADS,
+                                    seed=Defaults.SEED,
+                                    wrapper_class=get_wrapper
+                                    )
+        else:
+            self.env = ActionMasker(self.env, mask_fn)
 
         # Build the model
         model = MaskablePPO(policy=Defaults.POLICY,
@@ -109,16 +130,16 @@ class PPOAlgorithm():
         # Train the model
         model.learn(total_timesteps=Defaults.TOTAL_TIMESTEPS,
                     callback=callbacks,
-                    tb_log_name=Defaults.NAME_PREFIX
+                    tb_log_name=timestamp + Defaults.NAME_PREFIX + tag
                     )
         
-        if use_wandb:
+        if self.use_wandb:
             # End logging session
             wandb.finish()
 
-    def evaluation(self, use_wandb=True):
+    def evaluation(self):
         # Load the most recent model
-        if use_wandb:
+        if self.use_wandb:
             models = [{'file': x, 'timestamp': str(x.split(Defaults.NAME_PREFIX)[0].split(Defaults.NAME_PREFIX)[0])} for x in os.listdir(Defaults.SAVE_PATH)]
             latest_model = sorted(models, reverse=True, key=lambda x: datetime.datetime.strptime(x["timestamp"], "%Y-%m-%d_%H:%M:%S"))[0]['file']
             model = MaskablePPO.load(os.path.join(Defaults.SAVE_PATH, latest_model + "/model.zip"), device=Defaults.DEVICE)
