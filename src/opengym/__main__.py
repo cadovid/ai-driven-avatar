@@ -14,7 +14,7 @@ from src.pygame.settings import CONSUMABLES, ENVIRONMENT_TEMPERATURE
 
 @unique
 class Action(Enum):
-    RIGTH = 0
+    RIGHT = 0
     LEFT = 1
     DOWN = 2
     UP = 3
@@ -22,6 +22,7 @@ class Action(Enum):
     DRINK = 5
     PICK_UP = 6
     SLEEP = 7
+    STAND_STILL = 8
 
 
 class GymGame(Env):
@@ -30,7 +31,7 @@ class GymGame(Env):
         self.game = Game()
         #self.state = self.game.new()
         self._valid_actions = None
-        self.action_space = spaces.Discrete(8)
+        self.action_space = spaces.Discrete(9)
         self.observation_space = spaces.Dict(
             {
                 #"avatar_position": spaces.Box(low=np.array([0, 0]), high=np.array([1984, 1472]), dtype=np.int32),
@@ -69,23 +70,25 @@ class GymGame(Env):
 
         # Executes action behaviour 
         for avatar in self.game.avatar_sprites:
-            if action == 0:
+            if action == Action.RIGHT.value:
                 avatar.movement(1, 0)
-            elif action == 1:
+            elif action == Action.LEFT.value:
                 avatar.movement(-1, 0)
-            elif action == 2:
+            elif action == Action.DOWN.value:
                 avatar.movement(0, 1)
-            elif action == 3:
+            elif action == Action.UP.value:
                 avatar.movement(0, -1)
-            elif action == 4:
+            elif action == Action.EAT.value:
                 avatar.eat()
-            elif action == 5:
+            elif action == Action.DRINK.value:
                 avatar.drink()
-            elif action == 6:
+            elif action == Action.PICK_UP.value:
                 avatar.pick_up(self.game.hitted_object.type)
                 self.game.hitted_object.kill()
-            elif action == 7:
+            elif action == Action.SLEEP.value:
                 avatar.sleep()
+            elif action == Action.STAND_STILL.value:
+                avatar.stand_still()
 
         # Update information on the game >>>>>>>>>>>>>>>>>>>>>>
         for avatar in self.game.avatar_sprites:
@@ -156,7 +159,7 @@ class GymGame(Env):
             self._valid_actions = [action.value for action in Action if self._is_valid_action(avatar, action)]
 
     def _is_valid_action(self, avatar, action):
-        if action == Action.RIGTH and not avatar.analyze_collisions(1, 0):
+        if action == Action.RIGHT and not avatar.analyze_collisions(1, 0):
             return True
         elif action == Action.LEFT and not avatar.analyze_collisions(-1, 0):
             return True
@@ -176,6 +179,8 @@ class GymGame(Env):
             return True
         elif action == Action.SLEEP:
             return True
+        elif action == Action.STAND_STILL:
+            return True
         else:
             return False
 
@@ -187,14 +192,16 @@ class GymGame(Env):
     def manual_run(self):
         self.state = self.reset()
         self.pressed_keys = []
-        self.relevant_keys = {pygame.K_RIGHT: 0,
-                              pygame.K_LEFT: 1,
-                              pygame.K_DOWN: 2,
-                              pygame.K_UP: 3,
-                              pygame.K_e: 4,
-                              pygame.K_d: 5,
-                              pygame.K_p: 6,
-                              pygame.K_s: 7}
+        self.relevant_keys = {pygame.K_RIGHT: Action.RIGHT.value,
+                              pygame.K_LEFT: Action.LEFT.value,
+                              pygame.K_DOWN: Action.DOWN.value,
+                              pygame.K_UP: Action.UP.value,
+                              pygame.K_e: Action.EAT.value,
+                              pygame.K_d: Action.DRINK.value,
+                              pygame.K_p: Action.PICK_UP.value,
+                              pygame.K_s: Action.SLEEP.value,
+                              pygame.K_q: Action.STAND_STILL.value
+                              }
         while True:
             print()
             print('>'*50)

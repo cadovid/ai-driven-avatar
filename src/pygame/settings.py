@@ -88,7 +88,7 @@ NON_CONSUMABLES = {'cup': {'capacity': 0.33},
 
 # 5.1. Action definitions
 # For required_energy, all the values do not include the BMR. Given in [W/s]
-ACTIONS = {"stand": {"required_energy": 45, "required_time": 0.1},
+ACTIONS = {"stand_still": {"required_energy": 45, "required_time": 0.5},
            "movement": {"required_energy": 115, "required_time": 0.1},
            "eat": {"required_energy": 0, "required_time": 0.5},
            "drink": {"required_energy": 0, "required_time": 0.01},

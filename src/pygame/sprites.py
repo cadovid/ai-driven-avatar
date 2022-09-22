@@ -109,6 +109,9 @@ class Avatar(pygame.sprite.Sprite):
         self.add_object_inventory(object)
         self.drives.run_action("pickup")
     
+    def stand_still(self):
+        self.drives.run_action("stand_still")
+
     def sleep(self):
         self.drives.run_action("sleep")
         self.drives.biological_clock = 0
