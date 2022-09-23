@@ -4,6 +4,7 @@ import pygame
 
 # SECTION 1. COLORS
 WHITE = (255, 255, 255)
+ANTIQUE_WHITE = (255, 248, 220)
 GREY = (128, 128, 128)
 RED = (255, 0, 0)
 GREEN = (0, 201, 87)

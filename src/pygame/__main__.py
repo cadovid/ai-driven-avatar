@@ -6,7 +6,7 @@ import sys
 
 from random import choice
 
-from src.pygame.hud import draw_text_on_screen, draw_drive_on_screen
+from src.pygame.hud import draw_text_on_screen, draw_drive_on_screen, draw_text_on_rectangle, get_text_info
 from src.pygame.settings import *
 from src.pygame.sprites import Avatar, Mob, Object, Wall, Obstacle
 from src.pygame.tilemap import Map, Camera, TiledMap
@@ -382,9 +382,11 @@ class Game():
             draw_drive_on_screen(self.window, 60, 10, avatar.drives.stored_energy, energy_bar, "Energy")
             draw_drive_on_screen(self.window, 60, 20, avatar.drives.water, BASAL_WATER, "Water")
             draw_drive_on_screen(self.window, 60, 30, 1 - avatar.drives.sleepiness, 1, "Sleepiness")
-            draw_text_on_screen(self.window, f"ENV TEMPERATURE: {avatar.drives.perceived_temperature}", "monospace", 15, BLACK, self.width - (self.width / 2), 10, "center")
-            draw_text_on_screen(self.window, f"DAYS: {self.days} HOURS: {self.hours:.2f}", "monospace", 15, BLACK, self.width - (self.width / 2), 25, "center")
-            draw_text_on_screen(self.window, f"INVENTORY: {list(avatar.inventory)}", "monospace", 15, BLACK, self.width - (self.width / 2), 40, "center")
+            _, width_temp, height_temp, surf_temp, rect_temp = get_text_info(f"ENV TEMPERATURE: {avatar.drives.perceived_temperature}", "monospace", 15, BLACK, self.width - (self.width / 2), 10, "center")
+            _, width_time, height_time, surf_time, rect_time = get_text_info(f"DAYS: {self.days} HOURS: {self.hours:.2f}", "monospace", 15, BLACK, self.width - (self.width / 2), 25, "center")
+            x_inv, width_inv, height_inv, surf_inv, rect_inv = get_text_info(f"INVENTORY: {list(avatar.inventory)}", "monospace", 15, BLACK, self.width - (self.width / 2), 40, "center")
+            surfaces, rectangles = [surf_temp, surf_time, surf_inv], [rect_temp, rect_time, rect_inv]
+            draw_text_on_rectangle(self.window, x_inv - (max(width_inv, width_temp, width_time) / 2) - 2, 2, max(width_temp, width_time, width_inv) + 4, height_temp + height_time + height_inv + 2, ANTIQUE_WHITE, surfaces, rectangles)
         if self.paused:
             self.window.blit(self.dim_screen, (0, 0))
             draw_text_on_screen(self.window, "Paused", "monospace", 50, WHITE, self.width / 2, self.height / 2, "center")
