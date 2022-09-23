@@ -1,10 +1,11 @@
 import math
 import numpy as np
 import pygame
+import pytweening
 import os
 import sys
 
-from random import choice
+from random import choice, random
 
 from src.pygame.hud import draw_text_on_screen, draw_drive_on_screen, draw_text_on_rectangle, get_text_info
 from src.pygame.settings import *
@@ -89,6 +90,9 @@ class Game():
         self.object_sprites = pygame.sprite.Group()
         self.wall_sprites = pygame.sprite.Group()
 
+        # Set spawn coordinates
+        self.spawn_coordinates = []
+
         if isinstance(self.map, Map):
             # This option is deprecated. Need update
             for row, line in enumerate(self.map.data):
@@ -136,8 +140,17 @@ class Game():
                                 random_object = item
                                 break
                     Object(self, tile_object.x, tile_object.y, random_object)
+                    if random_object in CONSUMABLES:
+                        self.spawn_coordinates.append([tile_object.x, tile_object.y])
                 elif tile_object.name == 'wall':
                     Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+
+        # Set max items
+        self.max_items = len(self.object_sprites)
+
+        # Set countdown for spawn objects
+        self.n_trials = 0
+        self.countdown = 0
 
         # Debug for collisions mode
         self.draw_debug = False
@@ -195,6 +208,40 @@ class Game():
             for hit in hits:
                 self.hit_interaction(hit, avatar)
             
+            # Randomly spawn new objects at empty locations stochastically
+            self.n_trials = round(abs(self.time - self.hours), 1)
+            if self.n_trials >= 12:
+                self.n_trials = 24 - self.n_trials
+            if self.n_trials != 0:
+                rest = self.n_trials - math.floor(self.n_trials)
+            else:
+                rest = 0
+            self.countdown += rest
+            self.countdown = round(self.countdown, 1)
+            for _ in range(math.floor(self.n_trials)):
+                capacity_items = (len(self.object_sprites) - (len(UNIQUE_ITEMS) - 1)) / (self.max_items - (len(UNIQUE_ITEMS) - 1))
+                if random() < pytweening.easeInQuad(1-capacity_items):
+                    x_r, y_r = choice(self.spawn_coordinates)
+                    o_coordinates = []
+                    for o in self.object_sprites:
+                        o_coordinates.append([o.rect.x, o.rect.y])
+                    while [x_r, y_r] in o_coordinates:
+                        x_r, y_r = choice(self.spawn_coordinates)
+                    self.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
+            if self.countdown >= 1:
+                for _ in range(math.floor(self.countdown)):
+                    capacity_items = (len(self.object_sprites) - (len(UNIQUE_ITEMS) - 1)) / (self.max_items - (len(UNIQUE_ITEMS) - 1))
+                    if random() < pytweening.easeInQuad(1-capacity_items):
+                        x_r, y_r = choice(self.spawn_coordinates)
+                        o_coordinates = []
+                        for o in self.object_sprites:
+                            o_coordinates.append([o.rect.x, o.rect.y])
+                        while [x_r, y_r] in o_coordinates:
+                            x_r, y_r = choice(self.spawn_coordinates)
+                        self.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
+                self.countdown = 1 - math.floor(self.countdown)
+            self.n_trials = 0
+
             # Update day/night cycle conditions
             if self.hours >= 22 or self.hours < 6:
                 self.environment_temperature = ENVIRONMENT_TEMPERATURE - 10
@@ -238,6 +285,9 @@ class Game():
         while self.running:
             # Setup fps
             self.clock.tick(self.fps)
+
+            # Setup time
+            self.time = self.hours
 
             # Events
             self.events()
@@ -378,7 +428,6 @@ class Game():
 
         # Draw HUD functions
         for avatar in self.avatar_sprites:
-            print(pygame.font.get_fonts())
             pygame.draw.rect(self.window, ANTIQUE_WHITE, pygame.Rect(0, 7, 210, 40))
             energy_bar = avatar.drives.stored_energy if avatar.drives.stored_energy >= avatar.drives.standard_kcalh_production()[0] else avatar.drives.standard_kcalh_production()[0]
             draw_drive_on_screen(self.window, 60, 10, avatar.drives.stored_energy, energy_bar, "Energy")
@@ -433,6 +482,9 @@ class Game():
     def _normalize_value(self, value, min_range, max_range):
         # Min-max normalization
         return (value - min_range)/(max_range - min_range)
+
+    def spawn_new_object(self, x, y, name):
+        Object(self, x, y, name)
 
 
 # ---------- Main algorithm -----------

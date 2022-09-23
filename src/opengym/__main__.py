@@ -1,15 +1,18 @@
 import argparse
+import math
 import numpy as np
 import pygame
+import pytweening
 import sys
 
 from enum import Enum, unique
 from gym import Env, spaces
+from random import random, choice
 
 from src.pygame.__main__ import Game
 from src.rl_algorithms.ppo import PPOAlgorithm
 from src.rl_algorithms.random import RandomAlgorithm
-from src.pygame.settings import CONSUMABLES, ENVIRONMENT_TEMPERATURE
+from src.pygame.settings import COMMON_ITEMS, CONSUMABLES, ENVIRONMENT_TEMPERATURE, UNIQUE_ITEMS
 
 
 @unique
@@ -68,6 +71,9 @@ class GymGame(Env):
         # Compute for reward
         total_hours_pre = self.game.hours + (self.game.days * 24)
 
+        # Compute for random spawn
+        hours_pre = self.game.hours
+
         # Executes action behaviour 
         for avatar in self.game.avatar_sprites:
             if action == Action.RIGHT.value:
@@ -93,6 +99,40 @@ class GymGame(Env):
         # Update information on the game >>>>>>>>>>>>>>>>>>>>>>
         for avatar in self.game.avatar_sprites:
             
+            # Spawn random objects at empty locations stochastically
+            self.game.n_trials = round(abs(hours_pre - self.game.hours), 1)
+            if self.game.n_trials >= 12:
+                self.game.n_trials = 24 - self.game.n_trials
+            if self.game.n_trials != 0:
+                rest = self.game.n_trials - math.floor(self.game.n_trials)
+            else:
+                rest = 0
+            self.game.countdown += rest
+            self.game.countdown = round(self.game.countdown, 1)
+            for _ in range(math.floor(self.game.n_trials)):
+                capacity_items = (len(self.game.object_sprites) - (len(UNIQUE_ITEMS) - 1)) / (self.game.max_items - (len(UNIQUE_ITEMS) - 1))
+                if random() < pytweening.easeInQuad(1 - capacity_items):
+                    x_r, y_r = choice(self.game.spawn_coordinates)
+                    o_coordinates = []
+                    for o in self.game.object_sprites:
+                        o_coordinates.append([o.rect.x, o.rect.y])
+                    while [x_r, y_r] in o_coordinates:
+                        x_r, y_r = choice(self.game.spawn_coordinates)
+                    self.game.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
+            if self.game.countdown >= 1:
+                for _ in range(math.floor(self.game.countdown)):
+                    capacity_items = (len(self.game.object_sprites) - (len(UNIQUE_ITEMS) - 1)) / (self.game.max_items - (len(UNIQUE_ITEMS) - 1))
+                    if random() < pytweening.easeInQuad(1 - capacity_items):
+                        x_r, y_r = choice(self.game.spawn_coordinates)
+                        o_coordinates = []
+                        for o in self.game.object_sprites:
+                            o_coordinates.append([o.rect.x, o.rect.y])
+                        while [x_r, y_r] in o_coordinates:
+                            x_r, y_r = choice(self.game.spawn_coordinates)
+                        self.game.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
+                self.game.countdown = 1 - math.floor(self.game.countdown)
+            self.game.n_trials = 0
+
             # Restore game conditions
             self.game.on_water_source = False
             self.game.hitted_object = None

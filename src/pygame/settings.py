@@ -74,6 +74,7 @@ BOB_SPEED = 0.5
 OBJECT_IMAGES = {'apple': 'apple.png', 'hamburguer': 'hamburguer.png', 'cup': 'cup.png', 'water-dispenser': 'water-dispenser.png', 'fire': 'fire.png'}
 RANDOM_INIT = ['apple', 'hamburguer', 'cup', 'water-dispenser', 'fire']
 UNIQUE_ITEMS = ['cup', 'water-dispenser', 'fire']
+COMMON_ITEMS = ['apple', 'hamburguer']
 
 # 4.3. Object attributes
 CONSUMABLES = {'apple': {'kcal': 119},
