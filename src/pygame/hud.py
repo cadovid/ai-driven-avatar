@@ -18,7 +18,7 @@ def draw_avatar_bar(window, x_pos, y_pos, percentage):
     else:
         color = RED
     pygame.draw.rect(window, color, fill_rect)
-    pygame.draw.rect(window, WHITE, outline_rect, 1)
+    pygame.draw.rect(window, BLACK, outline_rect, 1)
 
 
 def draw_hud_text(window, x_pos, y_pos, text, size):

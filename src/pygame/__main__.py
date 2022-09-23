@@ -378,10 +378,12 @@ class Game():
 
         # Draw HUD functions
         for avatar in self.avatar_sprites:
+            print(pygame.font.get_fonts())
+            pygame.draw.rect(self.window, ANTIQUE_WHITE, pygame.Rect(0, 7, 210, 40))
             energy_bar = avatar.drives.stored_energy if avatar.drives.stored_energy >= avatar.drives.standard_kcalh_production()[0] else avatar.drives.standard_kcalh_production()[0]
             draw_drive_on_screen(self.window, 60, 10, avatar.drives.stored_energy, energy_bar, "Energy")
-            draw_drive_on_screen(self.window, 60, 20, avatar.drives.water, BASAL_WATER, "Water")
-            draw_drive_on_screen(self.window, 60, 30, 1 - avatar.drives.sleepiness, 1, "Sleepiness")
+            draw_drive_on_screen(self.window, 60, 22, avatar.drives.water, BASAL_WATER, "Water")
+            draw_drive_on_screen(self.window, 60, 34, 1 - avatar.drives.sleepiness, 1, "Sleepiness")
             _, width_temp, height_temp, surf_temp, rect_temp = get_text_info(f"ENV TEMPERATURE: {avatar.drives.perceived_temperature}", "monospace", 15, BLACK, self.width - (self.width / 2), 10, "center")
             _, width_time, height_time, surf_time, rect_time = get_text_info(f"DAYS: {self.days} HOURS: {self.hours:.2f}", "monospace", 15, BLACK, self.width - (self.width / 2), 25, "center")
             x_inv, width_inv, height_inv, surf_inv, rect_inv = get_text_info(f"INVENTORY: {list(avatar.inventory)}", "monospace", 15, BLACK, self.width - (self.width / 2), 40, "center")
