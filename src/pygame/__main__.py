@@ -224,8 +224,11 @@ class Game():
                     x_r, y_r = choice(self.spawn_coordinates)
                     o_coordinates = []
                     for o in self.object_sprites:
-                        o_coordinates.append([o.rect.x, o.rect.y])
-                    while [x_r, y_r] in o_coordinates:
+                        if o.type in CONSUMABLES:
+                            o_coordinates.append([o.rect.x, o.rect.y])
+                    if (len(self.spawn_coordinates) == len(o_coordinates)):
+                        break
+                    while [int(x_r), int(y_r)] in o_coordinates:
                         x_r, y_r = choice(self.spawn_coordinates)
                     self.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
             if self.countdown >= 1:
@@ -235,8 +238,11 @@ class Game():
                         x_r, y_r = choice(self.spawn_coordinates)
                         o_coordinates = []
                         for o in self.object_sprites:
-                            o_coordinates.append([o.rect.x, o.rect.y])
-                        while [x_r, y_r] in o_coordinates:
+                            if o.type in CONSUMABLES:
+                                o_coordinates.append([o.rect.x, o.rect.y])
+                        if (len(self.spawn_coordinates) == len(o_coordinates)):
+                            break
+                        while [int(x_r), int(y_r)] in o_coordinates:
                             x_r, y_r = choice(self.spawn_coordinates)
                         self.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
                 self.countdown = 1 - math.floor(self.countdown)

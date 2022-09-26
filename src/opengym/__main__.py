@@ -98,7 +98,6 @@ class GymGame(Env):
 
         # Update information on the game >>>>>>>>>>>>>>>>>>>>>>
         for avatar in self.game.avatar_sprites:
-            
             # Spawn random objects at empty locations stochastically
             self.game.n_trials = round(abs(hours_pre - self.game.hours), 1)
             if self.game.n_trials >= 12:
@@ -115,8 +114,11 @@ class GymGame(Env):
                     x_r, y_r = choice(self.game.spawn_coordinates)
                     o_coordinates = []
                     for o in self.game.object_sprites:
-                        o_coordinates.append([o.rect.x, o.rect.y])
-                    while [x_r, y_r] in o_coordinates:
+                        if o.type in CONSUMABLES:
+                            o_coordinates.append([o.rect.x, o.rect.y])
+                    if (len(self.game.spawn_coordinates) == len(o_coordinates)):
+                        break
+                    while [int(x_r), int(y_r)] in o_coordinates:
                         x_r, y_r = choice(self.game.spawn_coordinates)
                     self.game.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
             if self.game.countdown >= 1:
@@ -126,8 +128,11 @@ class GymGame(Env):
                         x_r, y_r = choice(self.game.spawn_coordinates)
                         o_coordinates = []
                         for o in self.game.object_sprites:
-                            o_coordinates.append([o.rect.x, o.rect.y])
-                        while [x_r, y_r] in o_coordinates:
+                            if o.type in CONSUMABLES:
+                                o_coordinates.append([o.rect.x, o.rect.y])
+                        if (len(self.game.spawn_coordinates) == len(o_coordinates)):
+                            break
+                        while [int(x_r), int(y_r)] in o_coordinates:
                             x_r, y_r = choice(self.game.spawn_coordinates)
                         self.game.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
                 self.game.countdown = 1 - math.floor(self.game.countdown)
@@ -144,7 +149,7 @@ class GymGame(Env):
             hits = pygame.sprite.spritecollide(avatar, self.game.object_sprites, False)
             for hit in hits:
                 self.game.hit_interaction(hit, avatar)
-            
+
             # Update day/night cycle conditions
             if self.game.hours >= 22 or self.game.hours < 6:
                 self.game.environment_temperature = ENVIRONMENT_TEMPERATURE - 10
@@ -166,7 +171,7 @@ class GymGame(Env):
             # 2) Reward in terms of arousal values (negative impact)
             drives_values = (time_elapsed * avatar.drives.hunger) + (time_elapsed * avatar.drives.thirst) + (time_elapsed * avatar.drives.sleepiness)
             # 3) Sum up
-            reward = time_elapsed - drives_values
+            reward = (time_elapsed * 2) - drives_values
 
         # Increment the episodic return
         self.episodic_return += reward
