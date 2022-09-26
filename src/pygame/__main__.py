@@ -180,8 +180,9 @@ class Game():
                         avatar.drink()
                 if event.key == pygame.K_p and self.hitted_object is not None:
                     for avatar in self.avatar_sprites:
-                        avatar.pick_up(self.hitted_object.type)
-                        self.hitted_object.kill()
+                        if len(avatar.inventory) <= 4:
+                            avatar.pick_up(self.hitted_object.type)
+                            self.hitted_object.kill()
             if event.type == CUSTOM_EVENT:
                 pass
 

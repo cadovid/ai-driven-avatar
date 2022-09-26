@@ -104,8 +104,6 @@ class Avatar(pygame.sprite.Sprite):
                 self.drives.run_action("drink")
 
     def pick_up(self, object):
-        if len(self.inventory) + 1 > 5:
-            self.inventory.popleft(0)
         self.add_object_inventory(object)
         self.drives.run_action("pickup")
     

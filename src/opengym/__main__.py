@@ -220,7 +220,7 @@ class GymGame(Env):
         elif action == Action.DRINK and self.game.on_water_source and avatar.inventory and avatar.drives.water < avatar.drives.basal_water:
             if "cup" in avatar.inventory:
                 return True
-        elif action == Action.PICK_UP and self.game.hitted_object is not None:
+        elif (action == Action.PICK_UP) and (self.game.hitted_object is not None) and (len(avatar.inventory) <= 4):
             return True
         elif action == Action.SLEEP:
             return True
