@@ -1,7 +1,7 @@
 import math
 import pytweening
 
-from settings import *
+from src.pygame.settings import *
 
 
 class BodyDrives:
@@ -162,7 +162,6 @@ class BodyDrives:
         self.basal_metabolic_rate = BASAL_METABOLIC_RATE + (0.01 * (25 - environment_temperature) * BASAL_METABOLIC_RATE)
 
     def run_action(self, action, food_kcal=None):
-        print(self.basal_metabolic_rate)
         self.get_efficiency()
         if action == "eat":
             self.actions[action]["required_energy"] = self.watts_to_kcalh(self.basal_metabolic_rate) + (0.1 * food_kcal)
@@ -170,6 +169,8 @@ class BodyDrives:
         action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consume)
         self.get_heatgivenoff_rate()
         action_water = self.get_water_mass_consumed(action_heatgivenoff, self.actions[action]["required_time"])
+        if action == "sleep":
+            action_water += 0.7
         self.update_water(-action_water)
         self.update_energy(-(action_heatgivenoff + action_usefulwork))
         self.biological_clock += self.actions[action]["required_time"]
@@ -178,20 +179,22 @@ class BodyDrives:
         if self.avatar is not None:
             self.avatar.update_game_time(self.actions[action]["required_time"])
         self.update_thirst_arousal(self.water)
-        self.check_priorities()
-        print(f'\n[Action Executed] {action}'
-                f'\n[Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
-                f'\n[Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}')
+        """ print(f'\n[Game Information][Action Executed] {action}'
+              f'\n[Game Information][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
+              f'\n[Game Information][Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
+              f'\n[Game Information][Priority] {self.check_priorities()}'
+              f'\n'
+              ) """
 
     def check_priorities(self):
         intensity = max(self.hunger, self.sleepiness, self.thirst)
         if intensity == self.hunger:
-            drive = "hunger"
+            drive = "Eat"
         elif intensity == self.sleepiness:
-            drive = "sleep"
+            drive = "Sleep"
         elif intensity == self.thirst:
-            drive = "thirst"
-        print(f'[Priority] {drive}')
+            drive = "Drink"
+        return drive
 
     def print_action_information(self):
         for action in self.actions:

@@ -1,7 +1,7 @@
 import pygame
 import pytmx
 
-from settings import *
+from src.pygame.settings import *
 
 
 class Map:

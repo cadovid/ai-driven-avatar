@@ -2,9 +2,9 @@ import pygame
 import pytweening
 
 from collections import deque
-from drives import BodyDrives
-from tilemap import Map, TiledMap
-from settings import *
+from src.pygame.drives import BodyDrives
+from src.pygame.tilemap import Map, TiledMap
+from src.pygame.settings import *
 
 
 vec = pygame.math.Vector2
@@ -104,16 +104,16 @@ class Avatar(pygame.sprite.Sprite):
                 self.drives.run_action("drink")
 
     def pick_up(self, object):
-        if len(self.inventory) + 1 > 5:
-            self.inventory.popleft(0)
         self.add_object_inventory(object)
         self.drives.run_action("pickup")
     
+    def stand_still(self):
+        self.drives.run_action("stand_still")
+
     def sleep(self):
         self.drives.run_action("sleep")
         self.drives.biological_clock = 0
         self.drives.sleepiness = 0
-        self.update_game_time(8)
 
     def get_rect_center(self):
         return self.rect.center

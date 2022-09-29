@@ -1,16 +1,20 @@
 import math
-from random import choice
+import numpy as np
 import pygame
+import pytweening
 import os
 import sys
 
-from hud import draw_text_on_screen, draw_drive_on_screen
-from settings import *
-from sprites import Avatar, Mob, Object, Wall, Obstacle
-from tilemap import Map, Camera, TiledMap
+from random import choice, random
+
+from src.pygame.hud import draw_text_on_screen, draw_drive_on_screen, draw_text_on_rectangle, get_text_info
+from src.pygame.settings import *
+from src.pygame.sprites import Avatar, Mob, Object, Wall, Obstacle
+from src.pygame.tilemap import Map, Camera, TiledMap
 
 
-class Game:
+class Game():
+
     def __init__(self):
         self.width = WIDTH
         self.height = HEIGHT
@@ -22,22 +26,20 @@ class Game:
         self.clock = pygame.time.Clock()
         self.fps = FPS
         self.field_of_view = FIELD_OF_VIEW
-        self.timer = pygame.time.get_ticks()
+        # self.timer = pygame.time.get_ticks()
 
     def load_data(self):
         # Paths
-        game_folder = os.path.dirname(__file__)
-        parent_game_folder = os.path.dirname(game_folder)
-        assets_folder = os.path.join(parent_game_folder, ASSETS_DIRECTORY_NAME)
-        config_folder = os.path.join(parent_game_folder, CONFIG_DIRECTORY_NAME)
+        assets_folder = os.path.join(ROOT_PROJECT_PATH, ASSETS_DIRECTORY_NAME)
+        config_folder = os.path.join(ROOT_PROJECT_PATH, CONFIG_DIRECTORY_NAME)
 
         # Charge map
         if USE_TILED_MAP:
-            self.map = TiledMap(os.path.join(parent_game_folder, os.path.join(config_folder, TILEDMAP_FILE)))
+            self.map = TiledMap(os.path.join(ROOT_PROJECT_PATH, os.path.join(config_folder, TILEDMAP_FILE)))
             self.map_img = self.map.make_map()
             self.map_rect = self.map_img.get_rect()
         else:
-            self.map = Map(os.path.join(parent_game_folder, os.path.join(config_folder, MAP_FILE)))
+            self.map = Map(os.path.join(ROOT_PROJECT_PATH, os.path.join(config_folder, MAP_FILE)))
         
         # Charge general assets
         self.avatar_img = pygame.transform.scale(pygame.image.load(os.path.join(assets_folder, AVATAR)).convert_alpha(), (self.tilesize, self.tilesize))
@@ -79,6 +81,7 @@ class Game:
         # Set map attributes
         self.on_water_source = False
         self.hitted_object = None
+        self.objects_on_sight = []
 
         # Spawn contents of the map
         self.all_sprites = pygame.sprite.Group()
@@ -87,7 +90,11 @@ class Game:
         self.object_sprites = pygame.sprite.Group()
         self.wall_sprites = pygame.sprite.Group()
 
+        # Set spawn coordinates
+        self.spawn_coordinates = []
+
         if isinstance(self.map, Map):
+            # This option is deprecated. Need update
             for row, line in enumerate(self.map.data):
                 for col, tile in enumerate(line):
                     if tile == 'a':
@@ -95,7 +102,12 @@ class Game:
                     elif tile == 's':
                         Mob(self, col, row)
                     elif tile == 'o':
-                        Object(self, col, row, choice(RANDOM_INIT))
+                        random_object = choice(RANDOM_INIT)
+                        if random_object in UNIQUE_ITEMS:
+                            for object in self.object_sprites:
+                                while random_object == object.type and object.type in UNIQUE_ITEMS:
+                                    random_object = choice(RANDOM_INIT)
+                        Object(self, col, row, random_object)
                     elif tile == 'w':
                         Object(self, col, row, 'water-dispenser')
                     elif tile == 'f':
@@ -103,19 +115,42 @@ class Game:
                     elif tile == '=':
                         Wall(self, col, row)
         elif isinstance(self.map, TiledMap):
+            current_objects = set()
+            n_objects = 0
+            for tile_object in self.map.tmxdata.objects:
+                if tile_object.name == 'object':
+                    n_objects += 1
             for tile_object in self.map.tmxdata.objects:
                 if tile_object.name == 'avatar':
                     Avatar(self, tile_object.x, tile_object.y)
                 elif tile_object.name == 'mob':
                     Mob(self, tile_object.x, tile_object.y)
                 elif tile_object.name == 'object':
-                    Object(self, tile_object.x, tile_object.y, choice(RANDOM_INIT))
-                elif tile_object.name == 'dispenser':
-                    Object(self, tile_object.x, tile_object.y, 'water-dispenser')
-                elif tile_object.name == 'fire':
-                    Object(self, tile_object.x, tile_object.y, 'fire')
+                    random_object = choice(RANDOM_INIT)
+                    for object in self.object_sprites:
+                        current_objects.add(object.type)
+                    # Avoid unique items duplication on the map
+                    if random_object in UNIQUE_ITEMS and random_object in current_objects:
+                        while random_object in UNIQUE_ITEMS and random_object in current_objects:
+                            random_object = choice(RANDOM_INIT)
+                    # Check at least one object per item in unique items
+                    if (len(self.object_sprites) >= n_objects - len(UNIQUE_ITEMS)):
+                        for item in UNIQUE_ITEMS:
+                            if item not in current_objects:
+                                random_object = item
+                                break
+                    Object(self, tile_object.x, tile_object.y, random_object)
+                    if random_object in CONSUMABLES:
+                        self.spawn_coordinates.append([tile_object.x, tile_object.y])
                 elif tile_object.name == 'wall':
                     Obstacle(self, tile_object.x, tile_object.y, tile_object.width, tile_object.height)
+
+        # Set max items
+        self.max_items = len(self.object_sprites)
+
+        # Set countdown for spawn objects
+        self.n_trials = 0
+        self.countdown = 0
 
         # Debug for collisions mode
         self.draw_debug = False
@@ -145,8 +180,9 @@ class Game:
                         avatar.drink()
                 if event.key == pygame.K_p and self.hitted_object is not None:
                     for avatar in self.avatar_sprites:
-                        avatar.pick_up(self.hitted_object.type)
-                        self.hitted_object.kill()
+                        if len(avatar.inventory) <= 4:
+                            avatar.pick_up(self.hitted_object.type)
+                            self.hitted_object.kill()
             if event.type == CUSTOM_EVENT:
                 pass
 
@@ -173,6 +209,46 @@ class Game:
             for hit in hits:
                 self.hit_interaction(hit, avatar)
             
+            # Randomly spawn new objects at empty locations stochastically
+            self.n_trials = round(abs(self.time - self.hours), 1)
+            if self.n_trials >= 12:
+                self.n_trials = 24 - self.n_trials
+            if self.n_trials != 0:
+                rest = self.n_trials - math.floor(self.n_trials)
+            else:
+                rest = 0
+            self.countdown += rest
+            self.countdown = round(self.countdown, 1)
+            for _ in range(math.floor(self.n_trials)):
+                capacity_items = (len(self.object_sprites) - (len(UNIQUE_ITEMS) - 1)) / (self.max_items - (len(UNIQUE_ITEMS) - 1))
+                if random() < pytweening.easeInQuad(1-capacity_items):
+                    x_r, y_r = choice(self.spawn_coordinates)
+                    o_coordinates = []
+                    for o in self.object_sprites:
+                        if o.type in CONSUMABLES:
+                            o_coordinates.append([o.rect.x, o.rect.y])
+                    if (len(self.spawn_coordinates) == len(o_coordinates)):
+                        break
+                    while [int(x_r), int(y_r)] in o_coordinates:
+                        x_r, y_r = choice(self.spawn_coordinates)
+                    self.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
+            if self.countdown >= 1:
+                for _ in range(math.floor(self.countdown)):
+                    capacity_items = (len(self.object_sprites) - (len(UNIQUE_ITEMS) - 1)) / (self.max_items - (len(UNIQUE_ITEMS) - 1))
+                    if random() < pytweening.easeInQuad(1-capacity_items):
+                        x_r, y_r = choice(self.spawn_coordinates)
+                        o_coordinates = []
+                        for o in self.object_sprites:
+                            if o.type in CONSUMABLES:
+                                o_coordinates.append([o.rect.x, o.rect.y])
+                        if (len(self.spawn_coordinates) == len(o_coordinates)):
+                            break
+                        while [int(x_r), int(y_r)] in o_coordinates:
+                            x_r, y_r = choice(self.spawn_coordinates)
+                        self.spawn_new_object(x_r, y_r, choice(COMMON_ITEMS))
+                self.countdown = 1 - math.floor(self.countdown)
+            self.n_trials = 0
+
             # Update day/night cycle conditions
             if self.hours >= 22 or self.hours < 6:
                 self.environment_temperature = ENVIRONMENT_TEMPERATURE - 10
@@ -188,7 +264,7 @@ class Game:
         if hit.type in CONSUMABLES:
             self.hitted_object = hit
         elif hit.type in NON_CONSUMABLES:
-            if (hit.type == 'cup') and (hit.type not in avatar.inventory):
+            if (hit.type == 'cup'):
                 self.hitted_object = hit
             elif (hit.type == 'water-dispenser'):
                 self.on_water_source = True
@@ -217,6 +293,9 @@ class Game:
             # Setup fps
             self.clock.tick(self.fps)
 
+            # Setup time
+            self.time = self.hours
+
             # Events
             self.events()
 
@@ -228,6 +307,7 @@ class Game:
             self.draw_window()
 
     def raycasting(self):
+        self.objects_on_sight = []
         # Check to see if the avatar can see any objects or mobs
 
         def iterate_over(sprites):
@@ -248,6 +328,7 @@ class Game:
                         pygame.draw.line(self.window, GREEN, avatar_center, sprite_center)
                     else:
                         pygame.draw.line(self.window, RED, avatar_center, sprite_center)
+                    self.objects_on_sight.append(found)
 
         for avatar in self.avatar_sprites:
             avatar_center = self.camera.apply(avatar).center
@@ -354,13 +435,16 @@ class Game:
 
         # Draw HUD functions
         for avatar in self.avatar_sprites:
+            pygame.draw.rect(self.window, ANTIQUE_WHITE, pygame.Rect(0, 7, 210, 40))
             energy_bar = avatar.drives.stored_energy if avatar.drives.stored_energy >= avatar.drives.standard_kcalh_production()[0] else avatar.drives.standard_kcalh_production()[0]
             draw_drive_on_screen(self.window, 60, 10, avatar.drives.stored_energy, energy_bar, "Energy")
-            draw_drive_on_screen(self.window, 60, 20, avatar.drives.water, BASAL_WATER, "Water")
-            draw_drive_on_screen(self.window, 60, 30, 1 - avatar.drives.sleepiness, 1, "Sleepiness")
-            draw_text_on_screen(self.window, f"ENV TEMPERATURE: {avatar.drives.perceived_temperature}", "monospace", 15, BLACK, self.width - (self.width / 2), 10, "center")
-            draw_text_on_screen(self.window, f"DAYS: {self.days} HOURS: {self.hours:.2f}", "monospace", 15, BLACK, self.width - (self.width / 2), 25, "center")
-            draw_text_on_screen(self.window, f"INVENTORY: {list(avatar.inventory)}", "monospace", 15, BLACK, self.width - (self.width / 2), 40, "center")
+            draw_drive_on_screen(self.window, 60, 22, avatar.drives.water, BASAL_WATER, "Water")
+            draw_drive_on_screen(self.window, 60, 34, 1 - avatar.drives.sleepiness, 1, "Sleepiness")
+            _, width_temp, height_temp, surf_temp, rect_temp = get_text_info(f"ENV TEMPERATURE: {avatar.drives.perceived_temperature}", "monospace", 15, BLACK, self.width - (self.width / 2), 10, "center")
+            _, width_time, height_time, surf_time, rect_time = get_text_info(f"DAYS: {self.days} HOURS: {self.hours:.2f}", "monospace", 15, BLACK, self.width - (self.width / 2), 25, "center")
+            x_inv, width_inv, height_inv, surf_inv, rect_inv = get_text_info(f"INVENTORY: {list(avatar.inventory)}", "monospace", 15, BLACK, self.width - (self.width / 2), 40, "center")
+            surfaces, rectangles = [surf_temp, surf_time, surf_inv], [rect_temp, rect_time, rect_inv]
+            draw_text_on_rectangle(self.window, x_inv - (max(width_inv, width_temp, width_time) / 2) - 2, 2, max(width_temp, width_time, width_inv) + 4, height_temp + height_time + height_inv + 2, ANTIQUE_WHITE, surfaces, rectangles)
         if self.paused:
             self.window.blit(self.dim_screen, (0, 0))
             draw_text_on_screen(self.window, "Paused", "monospace", 50, WHITE, self.width / 2, self.height / 2, "center")
@@ -389,7 +473,25 @@ class Game:
                 if event.type == pygame.KEYUP:
                     self.waiting = False
 
+    def _get_obs(self):
+        for avatar in self.avatar_sprites:
+            return {#"avatar_position": np.array([avatar.pos.x, avatar.pos.y], dtype=np.int32),
+                    "environment_temperature": np.array([self._normalize_value(avatar.drives.perceived_temperature, 20, 40)], dtype=np.float32),
+                    "energy_stored": np.array([self._normalize_value(avatar.drives.stored_energy, 0, 4000)], dtype=np.float32),
+                    "water_stored": np.array([self._normalize_value(avatar.drives.water, 0, 4)], dtype=np.float32),
+                    "sleepiness": np.array([avatar.drives.sleepiness], dtype=np.float32),
+                    "objects_at_sight": np.array([any(self.objects_on_sight)], dtype=np.int32),
+                    "objects_on_inventory": np.array([int(bool(avatar.inventory))], dtype=np.int32),
+                    "on_water_source": np.array([int(self.on_water_source)], dtype=np.int32),
+                    "on_object": np.array([int(bool(self.hitted_object))], dtype=np.int32)
+                    }
+    
+    def _normalize_value(self, value, min_range, max_range):
+        # Min-max normalization
+        return (value - min_range)/(max_range - min_range)
 
+    def spawn_new_object(self, x, y, name):
+        Object(self, x, y, name)
 
 
 # ---------- Main algorithm -----------
