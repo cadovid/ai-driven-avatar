@@ -37,7 +37,6 @@ class GymGame(Env):
         self.action_space = spaces.Discrete(9)
         self.observation_space = spaces.Dict(
             {
-                #"avatar_position": spaces.Box(low=np.array([0, 0]), high=np.array([1984, 1472]), dtype=np.int32),
                 "environment_temperature": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
                 "energy_stored": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
                 "water_stored": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
@@ -162,16 +161,15 @@ class GymGame(Env):
             object.update()
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        
-        # Reward assignment
+
         for avatar in self.game.avatar_sprites:
             # 1) Reward for executing the step
             total_hours_post = self.game.hours + (self.game.days * 24)
             time_elapsed = total_hours_post - total_hours_pre
             # 2) Reward in terms of arousal values (negative impact)
-            drives_values = (time_elapsed * avatar.drives.hunger) + (time_elapsed * avatar.drives.thirst) + (time_elapsed * avatar.drives.sleepiness)
-            # 3) Sum up
-            reward = (time_elapsed * 2) - drives_values
+            drives_values = (time_elapsed * np.exp(avatar.drives.hunger + 1)) + (time_elapsed * np.exp(avatar.drives.thirst + 1)) + (time_elapsed * np.exp(avatar.drives.sleepiness + 1))
+            # 3) Sum up (+1 per step)
+            reward = (time_elapsed - drives_values)
 
         # Increment the episodic return
         self.episodic_return += reward
