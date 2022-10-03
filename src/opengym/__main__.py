@@ -37,7 +37,6 @@ class GymGame(Env):
         self.action_space = spaces.Discrete(9)
         self.observation_space = spaces.Dict(
             {
-                #"avatar_position": spaces.Box(low=np.array([0, 0]), high=np.array([1984, 1472]), dtype=np.int32),
                 "environment_temperature": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
                 "energy_stored": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
                 "water_stored": spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
