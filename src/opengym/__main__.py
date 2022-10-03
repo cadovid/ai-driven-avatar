@@ -162,16 +162,15 @@ class GymGame(Env):
             object.update()
 
         # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        
-        # Reward assignment
+
         for avatar in self.game.avatar_sprites:
             # 1) Reward for executing the step
             total_hours_post = self.game.hours + (self.game.days * 24)
             time_elapsed = total_hours_post - total_hours_pre
             # 2) Reward in terms of arousal values (negative impact)
-            drives_values = (time_elapsed * avatar.drives.hunger) + (time_elapsed * avatar.drives.thirst) + (time_elapsed * avatar.drives.sleepiness)
-            # 3) Sum up
-            reward = (time_elapsed * 2) - drives_values
+            drives_values = (time_elapsed * np.exp(avatar.drives.hunger + 1)) + (time_elapsed * np.exp(avatar.drives.thirst + 1)) + (time_elapsed * np.exp(avatar.drives.sleepiness + 1))
+            # 3) Sum up (+1 per step)
+            reward = (time_elapsed - drives_values)
 
         # Increment the episodic return
         self.episodic_return += reward

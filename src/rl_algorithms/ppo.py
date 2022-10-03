@@ -34,7 +34,7 @@ class CustomPolicy(MaskableMultiInputActorCriticPolicy):
 class Defaults():
 
     TOTAL_TIMESTEPS = 100000
-    SAVE_FREQ = 10000
+    SAVE_FREQ = 100000
     SAVE_GRAD_FREQ = 100
     EVAL_FREQ = 10000
     EVAL_EPISODES = 10
