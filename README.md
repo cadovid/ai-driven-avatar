@@ -1,13 +1,6 @@
-## Name
+#
 
-AI-DRIVEN-AVATAR
-
-## Description
-
-This project is about the configuration of an human-like behavior avatar in a video game environment through reinforcement learning.
-
-## Visuals
-
+<p align="center">
 <img align=center
      width="360" height="250"
      src="./docs/images/pygame-1.png"
@@ -18,6 +11,23 @@ This project is about the configuration of an human-like behavior avatar in a vi
      src="./docs/images/pygame-2.png"
      alt="Pygame-2"
 />
+</p>
+
+## Name of the project
+
+AI-DRIVEN-AVATAR
+
+## Description
+
+This project is about the configuration of an human-like behavior avatar in a video game environment through reinforcement learning.
+
+## Visuals
+
+See it in action!
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/cadovid/ai-driven-avatar/master/assets/example_usage.gif" width="600px">
+</p>
 
 ## Basic Usage
 
