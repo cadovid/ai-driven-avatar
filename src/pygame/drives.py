@@ -33,6 +33,7 @@ class BodyDrives:
         self.basal_metabolic_rate = basal_metabolic_rate + (0.01 * (25 - environment_temperature) * basal_metabolic_rate) # [W]
         self.sleepiness = 0 # arousal
         self.biological_clock = 0 # [hours]
+        self.internal_state = 'satisfied'
 
     @staticmethod
     def watts_to_kcalh(units):
@@ -191,19 +192,21 @@ class BodyDrives:
         print(f'\n[Game Information][Action Executed] {action}'
               f'\n[Game Information][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
               f'\n[Game Information][Current arousal values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
-              f'\n[Game Information][Current priority] {self.check_priorities()}'
+              f'\n[Game Information][Internal state] {self.update_internal_state()}'
               f'\n'
               )
 
-    def check_priorities(self):
-        intensity = max(self.hunger, self.sleepiness, self.thirst)
-        if intensity == self.hunger:
-            drive = "Eat"
-        elif intensity == self.sleepiness:
-            drive = "Sleep"
-        elif intensity == self.thirst:
-            drive = "Drink"
-        return drive
+    def update_internal_state(self):
+        values = {}
+        if self.hunger > 0.2:
+            values.update({"hungry": self.hunger})
+        if self.thirst > 0.2:
+            values.update({"thirsty": self.thirst})
+        if self.sleepiness > 0.2:
+            values.update({"sleepy": self.sleepiness})
+        if values:
+            return max(values, key=values.get)
+        return 'satisfied'
 
     def print_action_information(self):
         for action in self.actions:

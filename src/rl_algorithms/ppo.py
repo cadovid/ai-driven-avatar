@@ -153,19 +153,19 @@ class PPOAlgorithm():
         while True:
             print()
             print('>'*50)
-            print(f'[PPO policy][Episodic Step] {self.env.episodic_step}')
-            print(f"[PPO policy][State S_t-1] {self.env.state}")
+            print(f'[Episodic Step] {self.env.episodic_step}')
+            print(f"[State S_t-1] {self.env.state}")
 
             # Perform prediction
             action_masks = self.env.valid_action_mask()
             action, _states = model.predict(obs, action_masks=action_masks)
-            print(f"[PPO policy][Action A_t] {self.env.get_action_meanings(action)}")
+            print(f"[Action A_t] {self.env.get_action_meanings(action)}")
 
             # Run action
             obs, reward, done, info = self.env.step(action)
-            print(f"[PPO policy][State S_t] {obs}")
-            print(f"[PPO policy][Step reward R_t] {reward:.2f}")
-            print(f"[PPO policy][Episodic return G_t so far] {self.env.episodic_return:.2f}")
+            print(f"[State S_t] {obs}")
+            print(f"[Step reward R_t] {reward:.2f}")
+            print(f"[Episodic return G_t so far] {self.env.episodic_return:.2f}")
 
             # Render the game
             self.env.render()
@@ -173,8 +173,13 @@ class PPOAlgorithm():
 
             # Check end conditions
             if done == True:
-                print(f"[PPO policy][Total elapsed time] {self.env.game.days} days, {self.env.game.hours:.2f} hours")
-                print(f"[PPO policy][Episodic return G_t] {self.env.episodic_return:.2f}")
+                print('<'*50)
+                print(f'\nSUMMARY\n')
+                data = [("Policy", "Total elapsed time", "Episodic return G_t"), ('PPO Masked Policy', f'{self.env.game.days} days, {self.env.game.hours:.2f} hours', f'{self.env.episodic_return:.2f}')]
+                for x, y, sum in data:
+                    print(f"{x:{25}} {y:{25}} {sum:{25}}")
                 break
+            
+            print('<'*50)
 
         self.env.close()

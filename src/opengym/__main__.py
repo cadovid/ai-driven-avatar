@@ -248,35 +248,36 @@ class GymGame(Env):
         while True:
             print()
             print('>'*50)
-            print(f'[Manual policy][Episodic Step] {self.episodic_step}')
-            print(f"[Manual policy][State S_t-1] {self.state}")
+            print(f'[Episodic Step] {self.episodic_step}')
+            print(f"[State S_t-1] {self.state}")
             
             # Render the game
             self.render()
 
             # Get valid actions space
             self.get_valid_actions()
-            print(f"[Manual policy][Action space A_t] {[self.get_action_meanings(action) for action in self._valid_actions]}")
+            print(f"[Action space A_t] {[self.get_action_meanings(action) for action in self._valid_actions]}")
 
             # Perform action
             action = self._process_event()
             while action not in self._valid_actions:
                 action = self._process_event()
-            print(f"[Manual policy][Action A_t] {self.get_action_meanings(action)}")
+            print(f"[Action A_t] {self.get_action_meanings(action)}")
             state, reward, done, info = self.step(action)
-            print(f"[Manual policy][State S_t] {state}")
-            print(f"[Manual policy][Step reward R_t] {reward:.2f}")
-            print(f"[Manual policy][Episodic return G_t so far] {self.episodic_return:.2f}")
+            print(f"[State S_t] {state}")
+            print(f"[Step reward R_t] {reward:.2f}")
+            print(f"[Episodic return G_t so far] {self.episodic_return:.2f}")
 
             # Render the game
             self.render()
 
             # Check end conditions
             if done == True:
-                print()
-                print(f"[Manual policy][Total elapsed time] {self.game.days} days, {self.game.hours:.2f} hours")
-                print(f"[Manual policy][Episodic return G_t] {self.episodic_return:.2f}")
                 print('<'*50)
+                print(f'\nSUMMARY\n')
+                data = [("Policy", "Total elapsed time", "Episodic return G_t"), ('Manual policy', f'{self.game.days} days, {self.game.hours:.2f} hours', f'{self.episodic_return:.2f}')]
+                for x, y, sum in data:
+                    print(f"{x:{25}} {y:{25}} {sum:{25}}")
                 break
         
         self.close()
