@@ -131,7 +131,10 @@ class BodyDrives:
             return 0
 
     def update_sleepiness_arousal(self, hours, maximum_range=24):
-        self.sleepiness = pytweening.easeInExpo((hours / maximum_range) - math.floor(hours / maximum_range))
+        if hours >= 24:
+            self.sleepiness = 1
+        else:
+            self.sleepiness = pytweening.easeInExpo((hours / maximum_range) - math.floor(hours / maximum_range))
 
     def update_hunger_arousal(self, value, maximum_range=None):
         if maximum_range is None:
@@ -163,28 +166,34 @@ class BodyDrives:
 
     def run_action(self, action, food_kcal=None):
         self.get_efficiency()
-        if action == "eat":
+        if action == "eat": # For eating it is necessary to include the energy required in digestion
             self.actions[action]["required_energy"] = self.watts_to_kcalh(self.basal_metabolic_rate) + (0.1 * food_kcal)
+        if action == "sleep": # For sleeping it is necessary to calculate the amount of time needed
+            self.actions[action]["required_time"] = (8 * round(self.sleepiness, 2))
         action_consume = (self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"])) * self.actions[action]["required_time"]
         action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consume)
         self.get_heatgivenoff_rate()
         action_water = self.get_water_mass_consumed(action_heatgivenoff, self.actions[action]["required_time"])
-        if action == "sleep":
-            action_water += 0.7
+        if action == "sleep": # During sleep a fixed water amount is consumed
+            action_water += self.actions[action]["required_time"] * 0.7 / 8
         self.update_water(-action_water)
         self.update_energy(-(action_heatgivenoff + action_usefulwork))
-        self.biological_clock += self.actions[action]["required_time"]
         self.update_hunger_arousal(self.stored_energy)
-        self.update_sleepiness_arousal(self.biological_clock)
+        self.update_thirst_arousal(self.water)
+        if action == "sleep":
+            self.biological_clock = 0
+            self.sleepiness = 0
+        else:
+            self.biological_clock += self.actions[action]["required_time"]
+            self.update_sleepiness_arousal(self.biological_clock)
         if self.avatar is not None:
             self.avatar.update_game_time(self.actions[action]["required_time"])
-        self.update_thirst_arousal(self.water)
-        """ print(f'\n[Game Information][Action Executed] {action}'
+        print(f'\n[Game Information][Action Executed] {action}'
               f'\n[Game Information][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
-              f'\n[Game Information][Arousal Values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
-              f'\n[Game Information][Priority] {self.check_priorities()}'
+              f'\n[Game Information][Current arousal values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
+              f'\n[Game Information][Current priority] {self.check_priorities()}'
               f'\n'
-              ) """
+              )
 
     def check_priorities(self):
         intensity = max(self.hunger, self.sleepiness, self.thirst)

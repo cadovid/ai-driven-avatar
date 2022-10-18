@@ -220,7 +220,7 @@ class GymGame(Env):
                 return True
         elif (action == Action.PICK_UP) and (self.game.hitted_object is not None) and (len(avatar.inventory) <= 4):
             return True
-        elif action == Action.SLEEP:
+        elif (action == Action.SLEEP) and (avatar.drives.sleepiness >= 0.2):
             return True
         elif action == Action.STAND_STILL:
             return True
