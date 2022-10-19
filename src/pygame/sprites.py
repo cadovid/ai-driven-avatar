@@ -161,7 +161,6 @@ class Mob(pygame.sprite.Sprite):
 
 class Object(pygame.sprite.Sprite):
     def __init__(self, game, x_init_pos, y_init_pos, type, create_mask=False):
-        # x and y position are given in terms of tiles, not pixels
         self.groups = game.all_sprites, game.object_sprites
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.game = game
@@ -171,10 +170,10 @@ class Object(pygame.sprite.Sprite):
         if create_mask:
             self.mask = pygame.mask.from_surface(self.image)
         self.pos = vec(x_init_pos, y_init_pos)
-        if isinstance(self.game.map, Map):
-            self.rect.x = self.pos.x * self.game.tilesize
-            self.rect.y = self.pos.y * self.game.tilesize
-        elif isinstance(self.game.map, TiledMap):
+        if isinstance(self.game.map, Map): # x and y position are given in terms of tiles, not pixels
+            self.rect.x = self.pos.x * self.game.tilesize 
+            self.rect.y = self.pos.y * self.game.tilesize 
+        elif isinstance(self.game.map, TiledMap): # x and y position are given in terms of pixels
             self.rect.x = self.pos.x
             self.rect.y = self.pos.y
         self.tweening = pytweening.easeInOutSine
@@ -253,8 +252,7 @@ class Wall(pygame.sprite.Sprite):
 
 class Obstacle(pygame.sprite.Sprite):
     """ This class is to be used only with TiledMaps and Object Layers"""
-    def __init__(self, game, x_init_pos, y_init_pos, width, height):
-        # x and y position are given in terms of tiles, not pixels 
+    def __init__(self, game, x_init_pos, y_init_pos, width, height): 
         self.groups = game.wall_sprites
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.game = game
