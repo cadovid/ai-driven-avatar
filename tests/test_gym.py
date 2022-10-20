@@ -25,7 +25,7 @@ def test_gym_environment(example_actions):
 
             # Check end of the episode conditions
             if done == True:
-                assert env.episodic_step == 147 or env.episodic_step == 148
+                assert env.episodic_step == 156
                 break
     
     env.close()
