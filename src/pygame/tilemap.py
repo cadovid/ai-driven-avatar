@@ -37,6 +37,56 @@ class TiledMap:
         return temp_surface
 
 
+class Spot:
+    def __init__(self, row_position, col_position, width, height, total_rows, total_cols):
+        self.row = row_position
+        self.col = col_position
+        self.x = row_position *  width
+        self.y = col_position * height
+        self.neighbors = []
+        self.width = width
+        self.height = height
+        self.total_rows = total_rows
+        self.total_cols = total_cols
+        self.obstacle = False
+        self.start = False
+        self.end = False
+    
+    def get_pos(self):
+        return self.row, self.col
+
+    def make_obstacle(self):
+        self.obstacle = True
+
+    def make_start(self):
+        self.start = True
+    
+    def make_end(self):
+        self.end = True
+    
+    def is_obstacle(self):
+        return self.obstacle
+    
+    def is_start(self):
+        return self.start
+    
+    def is_end(self):
+        return self.end
+
+    def update_neighbors(self, graph_map):
+        if self.row < self.total_rows - 1 and not graph_map[self.row + 1][self.col].is_obstacle(): # DOWN
+            self.neighbors.append(graph_map[self.row + 1][self.col])
+        if self.row > 0 and not graph_map[self.row - 1][self.col].is_obstacle(): # UP
+            self.neighbors.append(graph_map[self.row - 1][self.col])
+        if self.col < self.total_cols - 1 and not graph_map[self.row][self.col + 1].is_obstacle(): # RIGHT
+            self.neighbors.append(graph_map[self.row][self.col + 1])
+        if self.col > 0 and not graph_map[self.row][self.col - 1].is_obstacle(): # LEFT
+            self.neighbors.append(graph_map[self.row][self.col - 1])
+
+    def __lt__(self, other):
+        return False
+
+
 class Camera:
     def __init__(self, width, height):
         """ Keeps track of the whole map """
