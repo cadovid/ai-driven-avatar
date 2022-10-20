@@ -40,7 +40,7 @@ def reconstruct_path(came_from: Dict[Spot, Spot], current: Spot, start: Spot) ->
     print(f"[A* Optimal path actions] {sequence_actions}")
     return sequence_actions
 
-def a_star_algorithm(graph_map: List[List], start: Spot, end: Spot) -> Union[Deque, None]:
+def a_star_algorithm(graph_map: List[List[Spot]], start: Spot, end: Spot) -> Union[Deque, None]:
     count = 0
     open_set = PriorityQueue()
     open_set.put((0, count, start))
