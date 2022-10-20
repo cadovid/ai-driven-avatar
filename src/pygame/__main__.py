@@ -343,9 +343,9 @@ class Game():
                     if (found):
                         pygame.draw.line(self.window, GREEN, avatar_center, sprite_center)
                         self.sight_objects.update({sprite: distance})
+                        self.objects_on_sight.append(found)
                     else:
                         pygame.draw.line(self.window, RED, avatar_center, sprite_center)
-                    self.objects_on_sight.append(found)
 
         for avatar in self.avatar_sprites:
             avatar_center = self.camera.apply(avatar).center
