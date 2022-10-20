@@ -42,6 +42,7 @@ Within the second option, there are different arguments that modify the behaviou
 
 - `python src/opengym -m` : It runs the normal operation of the environment adapted as an Gym environment in **manual** operation. Under this mode, information on the status, actions and rewards obtained by the user is provided.
 - `python src/opengym -r` : It runs the normal operation of the environment adapted as an Gym environment in **random** operation. Under this mode, information on the status, actions and rewards obtained by the algorithm with a fully random policy is provided.
+- `python src/opengym -c` : It runs the normal operation of the environment adapted as an Gym environment in **controlled** operation. Under this mode, information on the status, actions and rewards obtained by the algorithm with a is provided. Here the policy is defined by means of a **rule-based behavioural system** to test the efficiency of other reinforcement learning algorithms with respect to a classical system.
 - `python src/opengym -a <algorithm-name> -t` : It runs the **training** of the **selected algorithm** under the adapted Gym environment. Currently, only the PPO algorithm (`ppo`) is adapted for execution. The training can be performed in vectorised form by adding the optional argument `--vecenv`.
 - `python src/opengym -a <algorithm-name> -e` : It runs the **evaluation** of the **selected algorithm** under the adapted Gym environment.
 
@@ -82,3 +83,32 @@ With this information, the avatar can perform the following actions:
 - *Drink*: It drinks. **Key**: <kbd>D</kbd>. **Restrictions**: The avatar does not have a cup in its inventory or is not located above a water source.
 - *Sleep*: It sleeps for 8 hours. **Key**: <kbd>S</kbd>. **Restrictions**: None.
 - *Stand still*: It stand stills and do nothing. **Key**: <kbd>Q</kbd>. **Restrictions**: None.
+
+## Rule-based decision making *vs* reinforcement learning algorithms
+
+Game artificial intelligence (AI) has evolved over time from more or less simple systems based on simple rules to the latest models based on reinforcement learning. Here we explore both ideas by providing a decision and choice system for the avatar by means of a complex rule system and a PPO reinforcement learning algorithm.
+
+The rule system incorporates pathfinding techniques such as the **A* algorithm** that helps the avatar to identify and select the most optimal routes according to its needs in each moment. The objective is to evaluate the efficiency of the new reinforcement learning techniques with respect to the more traditional models in the video game industry.
+
+The decision making rule system works as follow:
+
+```mermaid
+graph LR
+     A((Internal state evaluation)) --> B[Satisfied internal state]
+     A --> C[Hungry internal state]
+     A --> D[Thirsty internal state]
+     A --> E[Sleepy internal state]
+     B --> F{Explore environment}
+     F -- On object --> G((Pick up an object))
+     F -- Not on object --> H((Search and go to nearest object)) --> G
+     C --> I{Check inventory}
+     I -- Consumable found --> J((Eat))
+     I -- Consumable not found --> F
+     D --> K{Check inventory}
+     K -- Mug found --> L{Search for water}
+     K -- Mug not found --> F
+     L -- On water source --> M((Drink))
+     L -- Not on water source --> F
+     E --> N((Sleep))
+     F --> L
+```
