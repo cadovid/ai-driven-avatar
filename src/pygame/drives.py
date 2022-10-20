@@ -189,10 +189,11 @@ class BodyDrives:
             self.update_sleepiness_arousal(self.biological_clock)
         if self.avatar is not None:
             self.avatar.update_game_time(self.actions[action]["required_time"])
+        self.update_internal_state()
         print(f'\n[Game Information][Action Executed] {action}'
               f'\n[Game Information][Energy consumption] Total: {action_consumption:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
               f'\n[Game Information][Current arousal values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
-              f'\n[Game Information][Internal state] {self.update_internal_state()}'
+              f'\n[Game Information][Internal state post action] {self.internal_state}'
               f'\n'
               )
 
@@ -205,8 +206,9 @@ class BodyDrives:
         if self.sleepiness > 0.2:
             values.update({"sleepy": self.sleepiness})
         if values:
-            return max(values, key=values.get)
-        return 'satisfied'
+            self.internal_state = max(values, key=values.get)
+        else:
+            self.internal_state = 'satisfied'
 
     def print_action_information(self):
         for action in self.actions:
