@@ -10,7 +10,7 @@ from random import choice, random
 from src.pygame.hud import draw_text_on_screen, draw_drive_on_screen, draw_text_on_rectangle, get_text_info
 from src.pygame.settings import *
 from src.pygame.sprites import Avatar, Mob, Object, Wall, Obstacle
-from src.pygame.tilemap import Map, Camera, TiledMap
+from src.pygame.tilemap import Map, Camera, TiledMap, Spot
 
 
 class Game():
@@ -82,6 +82,7 @@ class Game():
         self.on_water_source = False
         self.hitted_object = None
         self.objects_on_sight = []
+        self.sight_objects = {}
 
         # Spawn contents of the map
         self.all_sprites = pygame.sprite.Group()
@@ -115,11 +116,30 @@ class Game():
                     elif tile == '=':
                         Wall(self, col, row)
         elif isinstance(self.map, TiledMap):
+            # Build graph map
             current_objects = set()
             n_objects = 0
+            self.graph_map = []
+            total_rows = self.map.tmxdata.height
+            total_cols = self.map.tmxdata.width
+            for _ in range(total_rows):
+                self.graph_map.append([])
+            for layer in self.map.tmxdata.visible_layers:
+                for tile in layer.tiles(): # tile[0] es la x = col, tile[1] es la y = row
+                    self.graph_map[tile[1]].append(Spot(tile[1], tile[0], TILESIZE, TILESIZE, total_rows, total_cols))
+                break
             for tile_object in self.map.tmxdata.objects:
+                if tile_object.name == 'wall':
+                    self.graph_map[int(tile_object.y / tile_object.height)][int(tile_object.x / tile_object.width)].make_obstacle()
                 if tile_object.name == 'object':
                     n_objects += 1
+
+            # Update neighbors of the graph map (edges)
+            for row in self.graph_map:
+                for spot in row:
+                    spot.update_neighbors(self.graph_map)
+
+            # Place objects on the map
             for tile_object in self.map.tmxdata.objects:
                 if tile_object.name == 'avatar':
                     Avatar(self, tile_object.x, tile_object.y)
@@ -308,8 +328,8 @@ class Game():
 
     def raycasting(self):
         self.objects_on_sight = []
+        self.sight_objects = {}
         # Check to see if the avatar can see any objects or mobs
-
         def iterate_over(sprites):
             for sprite in sprites:
                 sprite_center = self.camera.apply(sprite).center
@@ -326,6 +346,7 @@ class Game():
                             break # seen already
                     if (found):
                         pygame.draw.line(self.window, GREEN, avatar_center, sprite_center)
+                        self.sight_objects.update({sprite: distance})
                     else:
                         pygame.draw.line(self.window, RED, avatar_center, sprite_center)
                     self.objects_on_sight.append(found)
