@@ -5,27 +5,15 @@ import pygame
 import pytweening
 import sys
 
-from enum import Enum, unique
 from gym import Env, spaces
 from random import random, choice
 
 from src.pygame.__main__ import Game
+from src.pygame.settings import COMMON_ITEMS, CONSUMABLES, ENVIRONMENT_TEMPERATURE, UNIQUE_ITEMS
 from src.rl_algorithms.ppo import PPOAlgorithm
 from src.rl_algorithms.random import RandomAlgorithm
-from src.pygame.settings import COMMON_ITEMS, CONSUMABLES, ENVIRONMENT_TEMPERATURE, UNIQUE_ITEMS
-
-
-@unique
-class Action(Enum):
-    RIGHT = 0
-    LEFT = 1
-    DOWN = 2
-    UP = 3
-    EAT = 4
-    DRINK = 5
-    PICK_UP = 6
-    SLEEP = 7
-    STAND_STILL = 8
+from src.rl_algorithms.controlled import ControlledAlgorithm
+from src.utils.actions import Action
 
 
 class GymGame(Env):
@@ -303,6 +291,7 @@ if __name__ == "__main__":
     # Optional positional arguments
     parser.add_argument('-m', '--manual', action='store_true', help='Runs on manual operation')
     parser.add_argument('-r', '--random', action='store_true', help='Runs on random actions operation')
+    parser.add_argument('-c', '--controlled', action='store_true', help='Runs on basic rules actions operation')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('-a', '--algorithm', nargs='?', default='ppo', help='Runs an operation with a RL algorithm')
     parser.add_argument('-t', '--train', action='store_true', help='Performs training on a RL algorithm')
@@ -318,6 +307,9 @@ if __name__ == "__main__":
     elif args.random:
         env = GymGame()
         RandomAlgorithm(env).run()
+    elif args.controlled:
+        env = GymGame()
+        ControlledAlgorithm(env).run()
     elif args.algorithm and args.train:
         if 'ppo' in args.algorithm:
             if args.vecenv:
