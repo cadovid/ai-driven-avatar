@@ -171,8 +171,8 @@ class BodyDrives:
             self.actions[action]["required_energy"] = self.watts_to_kcalh(self.basal_metabolic_rate) + (0.1 * food_kcal)
         if action == "sleep": # For sleeping it is necessary to calculate the amount of time needed
             self.actions[action]["required_time"] = (8 * round(self.sleepiness, 2))
-        action_consume = (self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"])) * self.actions[action]["required_time"]
-        action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consume)
+        action_consumption = (self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"])) * self.actions[action]["required_time"]
+        action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consumption)
         self.get_heatgivenoff_rate()
         action_water = self.get_water_mass_consumed(action_heatgivenoff, self.actions[action]["required_time"])
         if action == "sleep": # During sleep a fixed water amount is consumed
@@ -190,7 +190,7 @@ class BodyDrives:
         if self.avatar is not None:
             self.avatar.update_game_time(self.actions[action]["required_time"])
         print(f'\n[Game Information][Action Executed] {action}'
-              f'\n[Game Information][Energy consumption] Total: {action_consume:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
+              f'\n[Game Information][Energy consumption] Total: {action_consumption:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
               f'\n[Game Information][Current arousal values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
               f'\n[Game Information][Internal state] {self.update_internal_state()}'
               f'\n'
@@ -211,9 +211,9 @@ class BodyDrives:
     def print_action_information(self):
         for action in self.actions:
             print(f'\n[{action}] required_energy: {self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"]):.2f} kcal/h, required_time: {self.actions[action]["required_time"]} h')
-            action_consume = (self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"])) * self.actions[action]["required_time"]
-            print(f'[{action}] total consume {action_consume:.2f} kcal in {self.actions[action]["required_time"]} h')
-            action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consume)
+            action_consumption = (self.watts_to_kcalh(self.basal_metabolic_rate) + self.watts_to_kcalh(self.actions[action]["required_energy"])) * self.actions[action]["required_time"]
+            print(f'[{action}] total consume {action_consumption:.2f} kcal in {self.actions[action]["required_time"]} h')
+            action_heatgivenoff, action_usefulwork = self.get_heatgivenoff_and_usefulwork(action_consumption)
             action_water = self.get_water_mass_consumed(action_heatgivenoff, self.actions[action]["required_time"])
             print(f'[{action}] heat to give off: {action_heatgivenoff:.2f} kcal in {self.actions[action]["required_time"]} h')
             print(f'[{action}] useful work: {action_usefulwork:.2f} kcal in {self.actions[action]["required_time"]} h')
