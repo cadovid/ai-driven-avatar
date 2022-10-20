@@ -93,7 +93,8 @@ NON_CONSUMABLES = {'cup': {'capacity': 0.33},
                    'water-dispenser': {'perishable': False},
                    'fire': {'activation_radius': 400, 'perishable': False}
                    }
-
+HARMFUL_ITEMS = ['fire']
+PICKABLE_ITEMS = ['apple', 'hamburguer', 'cup']
 
 # ===================
 # SECTION 5. ACTIONS

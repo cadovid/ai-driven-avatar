@@ -157,7 +157,7 @@ class GymGame(Env):
             # 2) Reward in terms of arousal values (negative impact)
             drives_values = (time_elapsed * np.exp(avatar.drives.hunger + 1)) + (time_elapsed * np.exp(avatar.drives.thirst + 1)) + (time_elapsed * np.exp(avatar.drives.sleepiness + 1))
             # 3) Sum up (+1 per step)
-            reward = (time_elapsed - drives_values)
+            reward = time_elapsed - drives_values
 
         # Increment the episodic return
         self.episodic_return += reward
