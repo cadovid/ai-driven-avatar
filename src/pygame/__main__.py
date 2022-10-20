@@ -200,7 +200,7 @@ class Game():
                         avatar.drink()
                 if event.key == pygame.K_p and self.hitted_object is not None:
                     for avatar in self.avatar_sprites:
-                        if len(avatar.inventory) <= 4:
+                        if len(avatar.inventory) <= 4 and self.hitted_object.type in PICKABLE_ITEMS:
                             avatar.pick_up(self.hitted_object.type)
                             self.hitted_object.kill()
             if event.type == CUSTOM_EVENT:
@@ -227,7 +227,7 @@ class Game():
             # Avatar hits an object
             hits = pygame.sprite.spritecollide(avatar, self.object_sprites, False)
             for hit in hits:
-                self.hit_interaction(hit, avatar)
+                self.hit_interaction(hit)
             
             # Randomly spawn new objects at empty locations stochastically
             self.n_trials = round(abs(self.time - self.hours), 1)
@@ -280,14 +280,10 @@ class Game():
         for object in self.object_sprites:
             object.update()
 
-    def hit_interaction(self, hit, avatar):
-        if hit.type in CONSUMABLES:
-            self.hitted_object = hit
-        elif hit.type in NON_CONSUMABLES:
-            if (hit.type == 'cup'):
-                self.hitted_object = hit
-            elif (hit.type == 'water-dispenser'):
-                self.on_water_source = True
+    def hit_interaction(self, hit):
+        self.hitted_object = hit
+        if (hit.type == 'water-dispenser'):
+            self.on_water_source = True
 
     def key_movement_management(self, keys_pressed, avatar):
         try:

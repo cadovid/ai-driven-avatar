@@ -9,7 +9,7 @@ from gym import Env, spaces
 from random import random, choice
 
 from src.pygame.__main__ import Game
-from src.pygame.settings import COMMON_ITEMS, CONSUMABLES, ENVIRONMENT_TEMPERATURE, UNIQUE_ITEMS
+from src.pygame.settings import COMMON_ITEMS, CONSUMABLES, ENVIRONMENT_TEMPERATURE, PICKABLE_ITEMS, UNIQUE_ITEMS
 from src.rl_algorithms.ppo import PPOAlgorithm
 from src.rl_algorithms.random import RandomAlgorithm
 from src.rl_algorithms.controlled import ControlledAlgorithm
@@ -135,7 +135,7 @@ class GymGame(Env):
             # Avatar hits an object
             hits = pygame.sprite.spritecollide(avatar, self.game.object_sprites, False)
             for hit in hits:
-                self.game.hit_interaction(hit, avatar)
+                self.game.hit_interaction(hit)
 
             # Update day/night cycle conditions
             if self.game.hours >= 22 or self.game.hours < 6:
@@ -206,7 +206,7 @@ class GymGame(Env):
         elif action == Action.DRINK and self.game.on_water_source and avatar.inventory and avatar.drives.water < avatar.drives.basal_water:
             if "cup" in avatar.inventory:
                 return True
-        elif (action == Action.PICK_UP) and (self.game.hitted_object is not None) and (len(avatar.inventory) <= 4):
+        elif (action == Action.PICK_UP) and (self.game.hitted_object is not None) and (len(avatar.inventory) <= 4) and (self.game.hitted_object.type in PICKABLE_ITEMS):
             return True
         elif (action == Action.SLEEP) and (avatar.drives.sleepiness >= 0.2):
             return True
