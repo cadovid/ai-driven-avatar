@@ -29,6 +29,7 @@ class Avatar(pygame.sprite.Sprite):
             self.rect.y = self.pos.y
         self.drives = BodyDrives(self.game.environment_temperature, self)
         self.inventory = deque()
+        self.memory = dict()
 
     def update_position(self):
         if isinstance(self.game.map, Map):
@@ -112,6 +113,9 @@ class Avatar(pygame.sprite.Sprite):
 
     def sleep(self):
         self.drives.run_action("sleep")
+
+    def add_to_memory(self, memento):
+        self.memory.update(memento)
 
     def get_rect_center(self):
         return self.rect.center
