@@ -81,6 +81,66 @@ class ControlledAlgorithm():
                 action = choice([action for action in self.env._valid_actions if action in [Action.LEFT.value, Action.RIGHT.value, Action.UP.value, Action.DOWN.value]])
         return action
 
+    def satisfied_behavior(self, avatar):
+        if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type in PICKABLE_ITEMS): # If on object, try something
+            if len(avatar.inventory) <= 4:
+                action = Action.PICK_UP.value
+            elif len(avatar.inventory) > 4:
+                action = Action.STAND_STILL.value
+        else: # If not on object, explore environment to find them
+            action = self.find_and_move_towards_closest_object(avatar)
+        return action
+
+    def hungry_behavior(self, avatar):
+        if avatar.inventory:
+            for object in avatar.inventory:
+                if object in CONSUMABLES:
+                    action = Action.EAT.value
+                else:
+                    if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type in PICKABLE_ITEMS):
+                        action = Action.PICK_UP.value
+                    else:
+                        action = self.find_and_move_towards_closest_object(avatar)
+        else:
+            if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type in PICKABLE_ITEMS):
+                action = Action.PICK_UP.value
+            else:
+                action = self.find_and_move_towards_closest_object(avatar)
+        return action
+
+    def thirsty_behavior(self, avatar):
+        if avatar.inventory and 'cup' in avatar.inventory:
+            if bool(self.env.game.hitted_object) and (self.env.game.on_water_source):
+                action = Action.DRINK.value
+            else:
+                if 'water-dispenser' in avatar.memory:
+                    print("I remember a water-dispenser!")
+                    water_source_x, water_source_y = avatar.memory['water-dispenser']
+                    start = self.env.game.graph_map[int(avatar.pos.y / TILESIZE)][int(avatar.pos.x / TILESIZE)]
+                    end = self.env.game.graph_map[water_source_y][water_source_x]
+                    sequence_actions = a_star_algorithm(self.env.game.graph_map, start, end)
+                    if sequence_actions:
+                        action = sequence_actions.popleft()
+                    else:
+                        print("A* algorithm did not find an optimal path. Random movement executed")
+                        action = choice([action for action in self.env._valid_actions if action in [Action.LEFT.value, Action.RIGHT.value, Action.UP.value, Action.DOWN.value]])
+                else:
+                    action = self.find_and_move_towards_closest_object(avatar, focus_on='water-dispenser')
+        else:
+            if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type == 'cup'):
+                if len(avatar.inventory) <= 4:
+                    action = Action.PICK_UP.value
+                else:
+                    action = Action.EAT.value
+            else:
+                action = self.find_and_move_towards_closest_object(avatar, focus_on='cup')
+        return action
+
+    def sleepy_behavior(self, avatar):
+        action = Action.SLEEP.value
+        return action
+
+
     def run(self):
         # Set initial conditions
         self.last_action = None
@@ -102,56 +162,13 @@ class ControlledAlgorithm():
 
                 # Set rules according to internal drives
                 if avatar.drives.internal_state == 'satisfied':
-                    if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type in PICKABLE_ITEMS): # If on object, try something
-                        if len(avatar.inventory) <= 4:
-                            action = Action.PICK_UP.value
-                        elif len(avatar.inventory) > 4:
-                            action = Action.STAND_STILL.value
-                    else: # If not on object, go find them
-                        action = self.find_and_move_towards_closest_object(avatar)
+                    action = self.satisfied_behavior(avatar)
                 elif avatar.drives.internal_state == 'hungry':
-                    if avatar.inventory:
-                        for object in avatar.inventory:
-                            if object in CONSUMABLES:
-                                action = Action.EAT.value
-                            else:
-                                if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type in PICKABLE_ITEMS):
-                                    action = Action.PICK_UP.value
-                                else:
-                                    action = self.find_and_move_towards_closest_object(avatar)
-                    else:
-                        if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type in PICKABLE_ITEMS):
-                            action = Action.PICK_UP.value
-                        else:
-                            action = self.find_and_move_towards_closest_object(avatar)
+                    action = self.hungry_behavior(avatar)
                 elif avatar.drives.internal_state == 'thirsty':
-                    if avatar.inventory and 'cup' in avatar.inventory:
-                        if bool(self.env.game.hitted_object) and (self.env.game.on_water_source):
-                            action = Action.DRINK.value
-                        else:
-                            if 'water-dispenser' in avatar.memory:
-                                print("I remember a water-dispenser!")
-                                water_source_x, water_source_y = avatar.memory['water-dispenser']
-                                start = self.env.game.graph_map[int(avatar.pos.y / TILESIZE)][int(avatar.pos.x / TILESIZE)]
-                                end = self.env.game.graph_map[water_source_y][water_source_x]
-                                sequence_actions = a_star_algorithm(self.env.game.graph_map, start, end)
-                                if sequence_actions:
-                                    action = sequence_actions.popleft()
-                                else:
-                                    print("A* algorithm did not find an optimal path. Random movement executed")
-                                    action = choice([action for action in self.env._valid_actions if action in [Action.LEFT.value, Action.RIGHT.value, Action.UP.value, Action.DOWN.value]])
-                            else:
-                                action = self.find_and_move_towards_closest_object(avatar, focus_on='water-dispenser')
-                    else:
-                        if bool(self.env.game.hitted_object) and (self.env.game.hitted_object.type == 'cup'):
-                            if len(avatar.inventory) <= 4:
-                                action = Action.PICK_UP.value
-                            else:
-                                action = Action.EAT.value
-                        else:
-                            action = self.find_and_move_towards_closest_object(avatar, focus_on='cup')
+                    action = self.thirsty_behavior(avatar)
                 elif avatar.drives.internal_state == 'sleepy':
-                    action = Action.SLEEP.value
+                    action = self.sleepy_behavior(avatar)
 
             # Check action
             assert action in self.env._valid_actions, f"Action not in valid space of actions < {self.env.get_action_meanings(action)} >"
