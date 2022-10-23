@@ -34,6 +34,7 @@ class BodyDrives:
         self.sleepiness = 0 # arousal
         self.biological_clock = 0 # [hours]
         self.internal_state = 'satisfied'
+        self.resolved_state = True
 
     @staticmethod
     def watts_to_kcalh(units):
@@ -166,6 +167,7 @@ class BodyDrives:
         self.basal_metabolic_rate = BASAL_METABOLIC_RATE + (0.01 * (25 - environment_temperature) * BASAL_METABOLIC_RATE)
 
     def run_action(self, action, food_kcal=None):
+        # Compute energy and water requirements
         self.get_efficiency()
         if action == "eat": # For eating it is necessary to include the energy required in digestion
             self.actions[action]["required_energy"] = self.watts_to_kcalh(self.basal_metabolic_rate) + (0.1 * food_kcal)
@@ -179,6 +181,8 @@ class BodyDrives:
             action_water += self.actions[action]["required_time"] * 0.7 / 8
         self.update_water(-action_water)
         self.update_energy(-(action_heatgivenoff + action_usefulwork))
+        
+        # Update arousal values of the drives
         self.update_hunger_arousal(self.stored_energy)
         self.update_thirst_arousal(self.water)
         if action == "sleep":
@@ -187,9 +191,25 @@ class BodyDrives:
         else:
             self.biological_clock += self.actions[action]["required_time"]
             self.update_sleepiness_arousal(self.biological_clock)
+        
+        # Update time of the game
         if self.avatar is not None:
             self.avatar.update_game_time(self.actions[action]["required_time"])
-        self.update_internal_state()
+        
+        # Update internal state of the avatar
+        if self.internal_state == 'hungry':
+            if self.hunger < 0.5 or self.sleepiness > 0.8 or self.thirst > 0.8:
+                self.resolved_state = True
+        elif self.internal_state == 'thirsty':
+            if self.thirst < 0.2:
+                self.resolved_state = True
+        elif self.internal_state == 'sleepy':
+            if self.sleepiness < 0.2:
+                self.resolved_state = True
+        if self.resolved_state:
+            self.update_internal_state()
+        
+        # Print information about the game
         print(f'\n[Game Information][Action Executed] {action}'
               f'\n[Game Information][Energy consumption] Total: {action_consumption:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
               f'\n[Game Information][Current arousal values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
@@ -209,6 +229,8 @@ class BodyDrives:
             self.internal_state = max(values, key=values.get)
         else:
             self.internal_state = 'satisfied'
+        if self.internal_state != 'satisfied':
+            self.resolved_state = False
 
     def print_action_information(self):
         for action in self.actions:
