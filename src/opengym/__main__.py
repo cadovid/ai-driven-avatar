@@ -155,7 +155,13 @@ class GymGame(Env):
             total_hours_post = self.game.hours + (self.game.days * 24)
             time_elapsed = total_hours_post - total_hours_pre
             # 2) Reward in terms of arousal values (negative impact)
-            drives_values = (time_elapsed * np.exp(avatar.drives.hunger + 1)) + (time_elapsed * np.exp(avatar.drives.thirst + 1)) + (time_elapsed * np.exp(avatar.drives.sleepiness + 1))
+            drives_values = 0
+            if avatar.drives.hunger > 0.5:
+                drives_values += time_elapsed * 1/3
+            if avatar.drives.thirst > 0.5:
+                drives_values += time_elapsed * 1/3
+            if avatar.drives.sleepiness > 0.8:
+                drives_values += time_elapsed * 1/3
             # 3) Sum up (+1 per step)
             reward = time_elapsed - drives_values
 
