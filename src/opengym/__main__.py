@@ -300,7 +300,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--controlled', action='store_true', help='Runs on basic rules actions operation')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('-a', '--algorithm', nargs='?', default='ppo', help='Runs an operation with a RL algorithm')
-    parser.add_argument('-t', '--train', action='store', help='Performs training on a RL algorithm')
+    parser.add_argument('-t', '--train', nargs='?', const=10000, type=int, help='Performs training on a RL algorithm')
     parser.add_argument('--vecenv', action='store_true', help='Performs training on a RL algorithm with vectorized environments')
     parser.add_argument('-e', '--evaluation', action='store_true', help='Performs evaluation on a RL algorithm')
 
