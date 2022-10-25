@@ -33,8 +33,8 @@ class CustomPolicy(MaskableMultiInputActorCriticPolicy):
 
 class Defaults():
 
-    TOTAL_TIMESTEPS = 100000
-    SAVE_FREQ = 100000
+    TOTAL_TIMESTEPS = 10000
+    SAVE_FREQ = 10000
     SAVE_GRAD_FREQ = 100
     EVAL_FREQ = 10000
     EVAL_EPISODES = 10
@@ -50,7 +50,7 @@ class Defaults():
 
 class PPOAlgorithm():
 
-    def __init__(self, environment, use_vecenv=False, use_wandb=True):
+    def __init__(self, environment, use_vecenv=False, use_wandb=False):
         self.env = environment
         self.use_vecenv = use_vecenv
         self.use_wandb = use_wandb
@@ -58,6 +58,9 @@ class PPOAlgorithm():
             self.state = self.env.reset()
 
     def train(self):
+        # Print information about the training
+        print(f"Total timesteps to perform: {Defaults.TOTAL_TIMESTEPS}")
+
         # Save tags
         if self.use_vecenv:
             tag = "_Vectorized"
@@ -69,7 +72,7 @@ class PPOAlgorithm():
 
         # Monitor and log assignment        
         #self.env = Monitor(self.env)
-        pathlib.Path(Defaults.LOGS_PATH).mkdir(exist_ok=True)
+        pathlib.Path(Defaults.LOGS_PATH).mkdir(parents=True, exist_ok=True)
         pathlib.Path(Defaults.SAVE_PATH).mkdir(exist_ok=True)
 
         if self.use_wandb:

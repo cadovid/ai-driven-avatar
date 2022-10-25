@@ -10,7 +10,7 @@ from random import random, choice
 
 from src.pygame.__main__ import Game
 from src.pygame.settings import COMMON_ITEMS, CONSUMABLES, ENVIRONMENT_TEMPERATURE, PICKABLE_ITEMS, UNIQUE_ITEMS
-from src.rl_algorithms.ppo import PPOAlgorithm
+from src.rl_algorithms.ppo import PPOAlgorithm, Defaults
 from src.rl_algorithms.random import RandomAlgorithm
 from src.rl_algorithms.controlled import ControlledAlgorithm
 from src.utils.actions import Action
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--controlled', action='store_true', help='Runs on basic rules actions operation')
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0')
     parser.add_argument('-a', '--algorithm', nargs='?', default='ppo', help='Runs an operation with a RL algorithm')
-    parser.add_argument('-t', '--train', action='store_true', help='Performs training on a RL algorithm')
+    parser.add_argument('-t', '--train', action='store', help='Performs training on a RL algorithm')
     parser.add_argument('--vecenv', action='store_true', help='Performs training on a RL algorithm with vectorized environments')
     parser.add_argument('-e', '--evaluation', action='store_true', help='Performs evaluation on a RL algorithm')
 
@@ -317,6 +317,7 @@ if __name__ == "__main__":
         env = GymGame()
         ControlledAlgorithm(env).run()
     elif args.algorithm and args.train:
+        Defaults.TOTAL_TIMESTEPS = int(args.train)
         if 'ppo' in args.algorithm:
             if args.vecenv:
                 PPOAlgorithm(GymGame, use_vecenv=True).train()

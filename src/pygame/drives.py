@@ -210,12 +210,12 @@ class BodyDrives:
             self.update_internal_state()
         
         # Print information about the game
-        print(f'\n[Game Information][Action Executed] {action}'
+        """ print(f'\n[Game Information][Action Executed] {action}'
               f'\n[Game Information][Energy consumption] Total: {action_consumption:.2f} kcal\tHeatOff: {action_heatgivenoff:.2f} kcal\tWater consumed: {action_water:.3f} l'
               f'\n[Game Information][Current arousal values] Hunger arousal: {self.hunger:.3f}\tSleepiness arousal: {self.sleepiness:.3f}\tThirst arousal: {self.thirst:.3f}'
               f'\n[Game Information][Internal state post action] {self.internal_state}'
               f'\n'
-              )
+              ) """
 
     def update_internal_state(self):
         values = {}
