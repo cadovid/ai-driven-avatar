@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  ai-driven-avatar:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.train
+    image: cadovid/ai-driven-avatar:version1.0
+    restart: unless-stopped
