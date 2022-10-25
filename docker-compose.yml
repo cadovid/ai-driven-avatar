@@ -4,6 +4,6 @@ services:
   ai-driven-avatar:
     build:
       context: .
-      dockerfile: dockerfiles/Dockerfile.train
+      dockerfile: src/rl_algorithms/Dockerfile
     image: cadovid/ai-driven-avatar:version1.0
     restart: unless-stopped
