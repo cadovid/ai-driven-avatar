@@ -5,5 +5,5 @@ services:
     build:
       context: .
       dockerfile: src/rl_algorithms/Dockerfile
-    image: cadovid/ai-driven-avatar:version1.0
+    image: cadovid/ai-driven-avatar:v1.0
     restart: unless-stopped

@@ -52,7 +52,7 @@ COPY --from=build-stage /ai-driven-avatar/assets/. ai-driven-avatar/assets
 
 ENV PATH /opt/conda/envs/venv/bin:$PATH
 
-## ENV SETTINGS FOR PYGAME
+## ENV SETTINGS
 ENV SDL_VIDEODRIVER 'dummy'
 
 ## ADD YOUR PROJECT'S ROOT DIRECTORY TO PYTHONPATH
