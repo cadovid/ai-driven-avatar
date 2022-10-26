@@ -364,3 +364,6 @@ nn_models/
 # Logs
 logs/
 wandb/
+
+# Secrets
+wandbsecrets.txt
