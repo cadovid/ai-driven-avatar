@@ -1,5 +1,5 @@
 ## BASE IMAGE
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS build-stage
 
 ## SET WORKING DIRECTORY
 WORKDIR /ai-driven-avatar
@@ -30,10 +30,9 @@ COPY ./environment_pip.txt /tmp/environment_pip.txt
 RUN conda update conda \
     && conda env create -f /tmp/environment.yml
     
-## ADD CONDA ENV PATH TO LINUX PATH 
+## ADD CONDA ENV PATH TO LINUX PATH (make sure to put your env name in place of "venv")
 ENV PATH /opt/conda/envs/venv/bin:$PATH
 ENV CONDA_DEFAULT_ENV venv
-# make sure to put your env name in place of "venv"
 
 ## MAKE ALL BELOW RUN COMMANDS USE THE NEW CONDA ENVIRONMENT
 SHELL ["conda", "run", "-n", "venv", "/bin/bash", "-c"]
@@ -41,14 +40,25 @@ SHELL ["conda", "run", "-n", "venv", "/bin/bash", "-c"]
 ## INSTALL PIP DEPENDENCIES
 RUN pip install -r /tmp/environment_pip.txt
 
-## ENV SETTINGS FOR PYGAME
-ENV SDL_VIDEODRIVER 'dummy'
-
 ## COPY REST OF THE FILES
 COPY . .
 
+FROM python:3.8.15
+
+COPY --from=build-stage /opt/conda/. /opt/conda/
+COPY --from=build-stage /ai-driven-avatar/src/. ai-driven-avatar/src
+COPY --from=build-stage /ai-driven-avatar/config/. ai-driven-avatar/config
+COPY --from=build-stage /ai-driven-avatar/assets/. ai-driven-avatar/assets
+
+ENV PATH /opt/conda/envs/venv/bin:$PATH
+
+## ENV SETTINGS FOR PYGAME
+ENV SDL_VIDEODRIVER 'dummy'
+
 ## ADD YOUR PROJECT'S ROOT DIRECTORY TO PYTHONPATH
 ENV PYTHONPATH /ai-driven-avatar:$PYTHONPATH
+
+WORKDIR /ai-driven-avatar
 
 ## FINALLY TIME TO EXECUTE!
 ENTRYPOINT ["python", "src/opengym/__main__.py"]
