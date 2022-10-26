@@ -50,7 +50,7 @@ class Defaults():
 
 class PPOAlgorithm():
 
-    def __init__(self, environment, use_vecenv=False, use_wandb=False):
+    def __init__(self, environment, use_vecenv=False, use_wandb=True):
         self.env = environment
         self.use_vecenv = use_vecenv
         self.use_wandb = use_wandb
