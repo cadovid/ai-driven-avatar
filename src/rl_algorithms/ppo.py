@@ -59,7 +59,7 @@ class PPOAlgorithm():
 
     def train(self):
         # Print information about the training
-        print(f"Total timesteps to perform: {Defaults.TOTAL_TIMESTEPS}")
+        print(f"\n[TRAINING INFO]Total timesteps to perform: {Defaults.TOTAL_TIMESTEPS}\n[TRAINING INFO]Device: {Defaults.DEVICE}")
 
         # Save tags
         if self.use_vecenv:
